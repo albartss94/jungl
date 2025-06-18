@@ -5,25 +5,22 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0" />
 <title>Jungl – Discover New Music</title>
 
-<!-- ===============  FULL CSS (identical + genre overlay)  =============== -->
+<!-- ====================  FULL CSS  ==================== -->
 <style>
-/* -------- GLOBAL RESET -------- */
+/* ---------- GLOBAL ---------- */
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;
      background:#0a0a0a;min-height:100vh;display:flex;flex-direction:column;align-items:center;color:#fff;overflow:hidden}
 
-/* -------- HEADER -------- */
-.header{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);
-        width:100%;padding:20px;display:flex;align-items:center;justify-content:space-between;
-        border-bottom:1px solid rgba(255,255,255,.1)}
+/* ---------- HEADER ---------- */
+.header{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);width:100%;padding:20px;
+        display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.1)}
 .logo-section{display:flex;align-items:center;gap:15px}
 .logo{width:40px;height:40px}.logo svg{width:100%;height:100%}
 .brand-name{font-size:24px;font-weight:700;letter-spacing:-1px;
             background:linear-gradient(135deg,#1DB954 0%,#1ed760 100%);
             -webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .tagline{font-size:12px;opacity:.7}
-
-/* -------- LOGIN BUTTON / AVATAR -------- */
 .login-section{display:flex;align-items:center;gap:15px}
 .login-button{background:#1DB954;color:#fff;border:none;padding:10px 24px;border-radius:20px;font-size:14px;font-weight:600;
               cursor:pointer;display:flex;align-items:center;gap:8px;transition:.3s}
@@ -32,7 +29,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 .user-avatar{width:35px;height:35px;border-radius:50%;
              background:linear-gradient(135deg,#1DB954 0%,#1ed760 100%)}
 
-/* -------- MAIN CONTAINER -------- */
+/* ---------- PROMPT ---------- */
 .app-container{max-width:400px;width:90%;margin-top:30px;flex:1;display:flex;flex-direction:column;position:relative}
 .login-prompt{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);
               border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:60px 40px;text-align:center;margin-top:100px}
@@ -40,15 +37,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
                  background:linear-gradient(135deg,#1DB954 0%,#1ed760 100%);
                  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .login-prompt p{opacity:.8;margin-bottom:30px;line-height:1.6}
-.spotify-login-btn{background:#1DB954;color:#fff;border:none;padding:15px 40px;border-radius:30px;font-size:16px;font-weight:600;
-                   cursor:pointer;display:inline-flex;align-items:center;gap:10px;transition:.3s}
+.spotify-login-btn{background:#1DB954;color:#fff;border:none;padding:15px 40px;border-radius:30px;
+                   font-size:16px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:10px;transition:.3s}
 .spotify-login-btn:hover{background:#1ed760;transform:translateY(-2px);box-shadow:0 10px 30px rgba(29,185,84,.3)}
 
-/* -------- GENRE OVERLAY -------- */
+/* ---------- GENRE OVERLAY ---------- */
 .genre-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);
                display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20}
 .genre-overlay h2{margin-bottom:18px;font-size:24px;text-align:center}
-.genre-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:26px;width:260px;
+.genre-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px;width:260px;
             max-height:58vh;overflow:auto;padding-right:6px}
 .genre-item{padding:11px 16px;border:2px solid #1DB954;border-radius:20px;text-align:center;cursor:pointer;
             transition:.25s;font-weight:600;font-size:14px}
@@ -57,7 +54,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
                       font-size:16px;font-weight:600;cursor:pointer;transition:.3s}
 .genre-overlay button:disabled{opacity:.38;cursor:not-allowed}
 
-/* -------- CARD STACK -------- */
+/* ---------- CARD STACK ---------- */
 .card-stack{position:relative;height:600px;margin-bottom:20px;display:none}
 .card-stack.active{display:block}
 .card{position:absolute;width:100%;height:100%;background:rgba(255,255,255,.05);backdrop-filter:blur(20px);
@@ -74,16 +71,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 .album-art img{width:100%;height:100%;object-fit:cover}
 .album-art .placeholder{font-size:80px;opacity:.2}
 
-/* audio player */
+/* mini player */
 .audio-player{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
               background:rgba(0,0,0,.85);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(18px);
               padding:15px 30px;border-radius:30px;display:flex;align-items:center;gap:15px}
-.play-button{width:40px;height:40px;background:#1DB954;border:none;border-radius:50%;cursor:pointer;
-             display:flex;align-items:center;justify-content:center;color:#fff;transition:.3s}
-.play-button:hover{background:#1ed760;transform:scale(1.1)}
-.play-button:active{transform:scale(.95)}
+.play-button{width:40px;height:40px;background:#1DB954;border:none;border-radius:50%;cursor:pointer;display:flex;
+             align-items:center;justify-content:center;color:#fff;transition:.3s}
+.play-button:hover{background:#1ed760;transform:scale(1.1)}.play-button:active{transform:scale(.95)}
 .progress-bar{width:150px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;overflow:hidden}
-.progress{height:100%;background:#1DB954;width:0%}.time-display{font-size:12px;font-weight:500}
+.progress{height:100%;background:#1DB954;width:0%}.time{font-size:12px;font-weight:500}
 
 /* song info */
 .song-info{padding:30px;flex:1;display:flex;flex-direction:column;justify-content:center}
@@ -92,20 +88,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 .song-info .genre{font-size:14px;color:#666;margin-bottom:20px}
 .song-info .popularity{display:flex;align-items:center;gap:10px;font-size:14px;color:#aaa}
 .popularity-bar{width:100px;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
-.popularity-fill{height:100%;background:linear-gradient(90deg,#1DB954,#1ed760);width:0%;
-                 transition:width 1s ease-out}
+.popularity-fill{height:100%;background:linear-gradient(90deg,#1DB954,#1ed760);width:0%;transition:width 1s ease-out}
 
-/* swipe buttons */
+/* action buttons */
 .action-buttons{display:flex;justify-content:center;gap:40px;margin-bottom:20px}
 .action-button{width:60px;height:60px;border-radius:50%;border:2px solid;cursor:pointer;display:flex;align-items:center;
                justify-content:center;font-size:24px;background:rgba(255,255,255,.05);backdrop-filter:blur(20px);
                transition:.3s}
-.action-button:hover{transform:scale(1.1)}
-.action-button:active{transform:scale(.95)}
-.dislike-button{border-color:#ff4458;color:#ff4458}
-.dislike-button:hover{background:#ff4458;color:#fff}
-.like-button{border-color:#1DB954;color:#1DB954}
-.like-button:hover{background:#1DB954;color:#fff}
+.action-button:hover{transform:scale(1.1)}.action-button:active{transform:scale(.95)}
+.dislike-button{border-color:#ff4458;color:#ff4458}.dislike-button:hover{background:#ff4458;color:#fff}
+.like-button{border-color:#1DB954;color:#1DB954}.like-button:hover{background:#1DB954;color:#fff}
 
 /* swipe labels */
 .love-indicator,.nope-indicator{position:absolute;top:50%;transform:translateY(-50%) rotate(-30deg);
@@ -120,8 +112,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 
 /* loading */
 .loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
-.loading-spinner{width:50px;height:50px;border:3px solid rgba(255,255,255,.1);border-top-color:#1DB954;
-                 border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px}
+.loading-spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.1);border-top-color:#1DB954;
+                 border-radius:50%;animation:spin 1s linear infinite;margin:20px auto}
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
@@ -131,10 +123,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 <div class="header">
   <div class="logo-section">
     <div class="logo">
-      <svg viewBox="0 0 40 40"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <svg viewBox="0 0 40 40"><defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stop-color="#1DB954"/><stop offset="100%" stop-color="#1ed760"/></linearGradient></defs>
-        <path d="M20 5L35 15v10L20 35 5 25V15Z" fill="url(#g)"/>
-        <path d="M20 12l7 5v6l-7 5-7-5v-6Z" fill="#0a0a0a"/><circle cx="20" cy="20" r="3" fill="url(#g)"/>
+        <path d="M20 5L35 15v10L20 35 5 25V15Z" fill="url(#grad)"/>
+        <path d="M20 12l7 5v6l-7 5-7-5v-6Z" fill="#0a0a0a"/><circle cx="20" cy="20" r="3" fill="url(#grad)"/>
       </svg>
     </div>
     <div><div class="brand-name">jungl</div><div class="tagline">Discover your sound</div></div>
@@ -150,124 +142,141 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
   <!-- login prompt -->
   <div class="login-prompt" id="loginPrompt">
     <h2>Welcome to Jungl</h2>
-    <p>Log in with Spotify to swipe through tailored track previews and build your discovery playlist.</p>
+    <p>Connect your Spotify account to swipe through track previews and build your discovery playlist.</p>
     <button class="spotify-login-btn" id="mainLoginBtn">Connect with Spotify</button>
   </div>
 
-  <!-- dynamic genre overlay -->
-  <div class="genre-overlay" id="genreOverlay" style="display:none">
+  <!-- genre overlay -->
+  <div class="genre-overlay" id="overlay" style="display:none">
     <h2>Pick up to 5 favourite genres</h2>
-    <div class="genre-grid" id="genreGrid"></div>
+    <div class="genre-grid" id="genreGrid">
+      <div class="loading"><div class="loading-spinner"></div></div>
+    </div>
     <button id="startBtn" disabled>Start swiping</button>
   </div>
 
-  <!-- swipe stack -->
-  <div class="card-stack" id="cardStack"><div class="loading"><div class="loading-spinner"></div><p>Loading…</p></div></div>
+  <!-- swipe deck -->
+  <div class="card-stack" id="deck">
+    <div class="loading"><div class="loading-spinner"></div><p>Loading…</p></div>
+  </div>
 
   <!-- action buttons -->
-  <div class="action-buttons" id="buttons" style="display:none">
-    <button class="action-button dislike-button" id="dislikeBtn">✕</button>
-    <button class="action-button like-button" id="likeBtn">♥</button>
+  <div class="action-buttons" id="actions" style="display:none">
+    <button class="action-button dislike-button" id="dislike">✕</button>
+    <button class="action-button like-button" id="like">♥</button>
   </div>
 
   <!-- stats -->
-  <div class="stats" id="stats" style="display:none"><span id="likedCount">0</span> liked • <span id="totalCount">0</span> heard</div>
+  <div class="stats" id="stats" style="display:none"><span id="liked">0</span> liked • <span id="total">0</span> heard</div>
 </div>
 
 <!-- ================= SCRIPT ================= -->
 <script>
-/* ---------- CONFIG ---------- */
-const CLIENT_ID='564aa538caf242638e9f895679012e50';
-const REDIRECT='https://albartss94.github.io/jungl/';
+/* ---------- CONFIG & HELPERS ---------- */
+const CID='564aa538caf242638e9f895679012e50';
+const RED='https://albartss94.github.io/jungl/';
 const AUTH='https://accounts.spotify.com/authorize';
-const TOKEN_URL='https://accounts.spotify.com/api/token';
+const TOKEN='https://accounts.spotify.com/api/token';
 const API='https://api.spotify.com/v1';
 const SCOPES=['user-read-private','user-read-email','playlist-modify-public','playlist-modify-private','user-top-read'];
 
-/* ---------- HELPERS ---------- */
-const rand=l=>[...crypto.getRandomValues(new Uint8Array(l))].map(x=>'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[x%62]).join('');
-const sha=async s=>crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+const rs=l=>[...crypto.getRandomValues(new Uint8Array(l))].map(x=>'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[x%62]).join('');
+const sha=async t=>crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));
 const b64u=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
 
 /* ---------- STATE ---------- */
-let token=null,availableGenres=[],chosen=[],tracks=[],i=0,liked=0,total=0,
-    audio=null,playing=false,progressT=null;
+let access=null,seeds=[],chosen=[],queue=[],idx=0,liked=0,total=0,
+    audio=null,playing=false,progInt=null;
 
 /* ---------- DOM ---------- */
-const grid=document.getElementById('genreGrid'),overlay=document.getElementById('genreOverlay'),
-      start=document.getElementById('startBtn'),stack=document.getElementById('cardStack'),
-      btnBox=document.getElementById('buttons'),likedEl=document.getElementById('likedCount'),
-      totalEl=document.getElementById('totalCount');
+const overlay=document.getElementById('overlay'),grid=document.getElementById('genreGrid'),start=document.getElementById('startBtn');
+const deck=document.getElementById('deck'),actions=document.getElementById('actions');
+const likedEl=document.getElementById('liked'),totalEl=document.getElementById('total');
 
-/* ---------- AUTH ---------- */
+/* ---------- LOGIN ---------- */
 async function login(){
-  const v=rand(64);sessionStorage.setItem('verifier',v);
-  const c=b64u(await sha(v)),state=rand(16);sessionStorage.setItem('state',state);
-  const qs=new URLSearchParams({response_type:'code',client_id:CLIENT_ID,redirect_uri:REDIRECT,
-    code_challenge_method:'S256',code_challenge:c,state,scope:SCOPES.join(' ')});
+  const ver=rs(64);sessionStorage.setItem('ver',ver);
+  const chal=b64u(await sha(ver)),state=rs(16);sessionStorage.setItem('st',state);
+  const qs=new URLSearchParams({response_type:'code',client_id:CID,redirect_uri:RED,code_challenge_method:'S256',
+    code_challenge:chal,state,scope:SCOPES.join(' ')});
   location.href=`${AUTH}?${qs}`;
 }
 async function exchange(code){
-  const body=new URLSearchParams({grant_type:'authorization_code',client_id:CLIENT_ID,code,
-    redirect_uri:REDIRECT,code_verifier:sessionStorage.getItem('verifier')});
-  const r=await fetch(TOKEN_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
-  return r.json();
+  const form=new URLSearchParams({grant_type:'authorization_code',client_id:CID,code,redirect_uri:RED,
+    code_verifier:sessionStorage.getItem('ver')});
+  const res=await fetch(TOKEN,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:form});
+  return res.json();
 }
 
 /* ---------- INIT ---------- */
 window.addEventListener('load',async()=>{
   document.getElementById('headerLoginBtn').onclick=login;
   document.getElementById('mainLoginBtn').onclick=login;
-  const params=new URLSearchParams(location.search);
-  const code=params.get('code'),state=params.get('state');
+
+  const p=new URLSearchParams(location.search),code=p.get('code'),state=p.get('state');
   if(code){
-    if(state!==sessionStorage.getItem('state')){alert('State mismatch');return;}
-    const data=await exchange(code);
-    if(!data.access_token){alert('Auth error');return;}
-    token=data.access_token;sessionStorage.setItem('token',token);
-    history.replaceState({},'',REDIRECT);
-  }else{token=sessionStorage.getItem('token');}
-  if(token){document.getElementById('loginPrompt').style.display='none';
+    if(state!==sessionStorage.getItem('st'))return alert('state error');
+    const tok=await exchange(code);if(!tok.access_token)return alert('auth error');
+    access=tok.access_token;sessionStorage.setItem('token',access);history.replaceState({},'',RED);
+  }else access=sessionStorage.getItem('token');
+
+  if(access){
+    document.getElementById('loginPrompt').style.display='none';
     document.getElementById('loginSection').style.display='none';
     document.getElementById('userInfo').style.display='flex';
-    fetch(`${API}/me`,{headers:{Authorization:`Bearer ${token}`}}).then(r=>r.json())
-      .then(u=>{document.getElementById('userName').textContent=u.display_name||'User';});
-    await loadGenres();overlay.style.display='flex';}
+    fetch(`${API}/me`,{headers:{Authorization:`Bearer ${access}`}})
+      .then(r=>r.json()).then(u=>{document.getElementById('userName').textContent=u.display_name||'User';});
+    loadSeeds();
+  }
 });
 
-/* ---------- GENRE PICKER ---------- */
-async function loadGenres(){
-  availableGenres=await fetch(`${API}/recommendations/available-genre-seeds`,
-    {headers:{Authorization:`Bearer ${token}`}}).then(r=>r.json()).then(j=>j.genres).catch(()=>[]);
-  const preferred=['pop','rock','hip-hop','edm','dance','house','indie','electronic','r-n-b','jazz','classical',
-                   'metal','folk','funk','k-pop','latin','reggae','soul','techno','trance','punk','disco',
-                   'blues','country','ambient','gospel','guitar','happy','sad','chill'];
-  const list=[...new Set([...preferred.filter(g=>availableGenres.includes(g)),...availableGenres])].slice(0,36);
-  grid.innerHTML='';start.disabled=true;chosen=[];
-  list.forEach(g=>{
+/* ---------- GENRE SEEDS ---------- */
+async function loadSeeds(){
+  overlay.style.display='flex';start.disabled=true;
+  try{
+    const res=await fetch(`${API}/recommendations/available-genre-seeds`,
+      {headers:{Authorization:`Bearer ${access}`}}).then(r=>r.json());
+    seeds=res.genres||[];
+  }catch(e){seeds=[];}
+  if(!seeds.length){
+    seeds=['pop','rock','hip-hop','edm','dance','house','indie','electronic','r-n-b','jazz','classical','metal',
+           'folk','funk','k-pop','latin','reggae','soul','techno','trance','blues','country','ambient','disco',
+           'punk','gospel','happy','sad','chill'];
+  }
+  buildGrid();
+}
+function buildGrid(){
+  grid.innerHTML='';chosen=[];const show=[...seeds].slice(0,36).sort();
+  show.forEach(g=>{
     const div=document.createElement('div');div.className='genre-item';div.textContent=g;
-    div.onclick=()=>{div.classList.toggle('selected');
-      chosen=[...document.querySelectorAll('.genre-item.selected')].map(el=>el.textContent);
-      if(chosen.length>5)div.classList.remove('selected'),chosen.pop();
-      start.disabled=chosen.length===0;};
+    div.onclick=()=>{
+      div.classList.toggle('selected');
+      chosen=[...document.querySelectorAll('.genre-item.selected')].map(e=>e.textContent);
+      if(chosen.length>5){div.classList.remove('selected');chosen.pop();}
+      start.disabled=chosen.length===0;
+    };
     grid.appendChild(div);
   });
   start.onclick=startApp;
 }
 
-/* ---------- FETCH TRACKS ---------- */
+/* ---------- TRACK LOADER ---------- */
 async function startApp(){
-  overlay.style.display='none';stack.innerHTML='<div class="loading"><div class="loading-spinner"></div><p>Loading…</p></div>';
+  overlay.style.display='none';actions.style.display='none';deck.innerHTML='<div class="loading"><div class="loading-spinner"></div></div>';
+  queue=[];idx=liked=total=0;updateStats();
+  await fetchMore();renderDeck();
+}
+async function fetchMore(){
   try{
-    const q=new URLSearchParams({seed_genres:chosen.slice(0,5).join(','),limit:80,market:'from_token'});
-    const r=await fetch(`${API}/recommendations?${q}`,{headers:{Authorization:`Bearer ${token}`}}).then(r=>r.json());
-    tracks=r.tracks.filter(t=>t.preview_url).map(t=>({
-      id:t.id,name:t.name,artists:t.artists,album:t.album,
-      preview:t.preview_url,pop:t.popularity
+    const qs=new URLSearchParams({seed_genres:chosen.slice(0,5).join(','),limit:80,market:'from_token'});
+    const rec=await fetch(`${API}/recommendations?${qs}`,
+      {headers:{Authorization:`Bearer ${access}`}}).then(r=>r.json());
+    const more=rec.tracks.filter(t=>t.preview_url).map(t=>({
+      id:t.id,name:t.name,artists:t.artists,album:t.album,preview:t.preview_url,pop:t.popularity
     }));
+    queue.push(...more.sort(()=>Math.random()-.5));
   }catch(e){console.error(e);}
-  if(!tracks.length)tracks=demo;
-  i=liked=total=0;updateStats();renderDeck();
+  if(!queue.length)queue.push(...demo);
 }
 
 /* ---------- DEMO ---------- */
@@ -276,42 +285,42 @@ const demo=[{id:'d1',name:'Electric Dreams',artists:[{name:'Neon Pulse'}],
 {id:'d2',name:'Midnight City',artists:[{name:'Urban Echo'}],
   album:{images:[{url:'https://picsum.photos/400?random=2'}]},preview:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',pop:85}];
 
-/* ---------- RENDER & INTERACTIONS ---------- */
+/* ---------- RENDER & INTERACTION ---------- */
 function renderDeck(){
-  stack.classList.add('active');btnBox.style.display='flex';stack.innerHTML='';
-  for(let n=0;n<Math.min(2,tracks.length);n++)create(tracks[i+n],n);
+  deck.classList.add('active');deck.innerHTML='';actions.style.display='flex';
+  for(let k=0;k<Math.min(2,queue.length-idx);k++)createCard(queue[idx+k],k);
 }
-function create(t,pos){
+function createCard(t,pos){
   const c=document.createElement('div');c.className='card';c.style.zIndex=10-pos;
   c.style.transform=`scale(${1-pos*.05}) translateY(${pos*10}px)`;
   c.innerHTML=`<div class="card-content"><div class="album-art">
-    <img src="${t.album.images[0]?.url||''}" onerror="this.style.display='none'">
-    <div class="audio-player"><button class="play-button"><span class="play-icon">▶</span></button>
-      <div class="progress-bar"><div class="progress"></div></div><span class="time">${'0:00'}</span></div></div>
+    <img src="${t.album.images[0]?.url||''}" onerror="this.style.display='none'"><div class="audio-player">
+      <button class="play-button"><span class="play-icon">▶</span></button>
+      <div class="progress-bar"><div class="progress"></div></div><span class="time">0:00</span></div></div>
     <div class="song-info"><h2>${t.name}</h2><p class="artist">${t.artists[0].name}</p>
       <p class="genre">${chosen.join(', ')}</p>
       <div class="popularity"><span>Popularity</span><div class="popularity-bar">
         <div class="popularity-fill" style="width:${t.pop}%"></div></div><span>${t.pop}%</span></div></div>
     <div class="love-indicator">LOVE</div><div class="nope-indicator">NOPE</div></div>`;
-  if(pos===0){interact(c,t);audioCtl(c,t);}
-  stack.appendChild(c);
+  if(pos===0){setInteractions(c,t);audioControls(c,t);}
+  deck.appendChild(c);
 }
-function audioCtl(card,t){
-  const btn=card.querySelector('.play-button'),icon=btn.querySelector('.play-icon'),
-        bar=card.querySelector('.progress'),tim=card.querySelector('.time');
+function audioControls(card,t){
+  const btn=card.querySelector('.play-button'),ico=btn.querySelector('.play-icon'),
+        bar=card.querySelector('.progress'),tm=card.querySelector('.time');
   btn.onclick=()=>{
-    if(audio&&playing){audio.pause();playing=false;icon.textContent='▶';return;}
+    if(audio&&playing){audio.pause();playing=false;ico.textContent='▶';return;}
     if(audio)audio.pause();
-    audio=new Audio(t.preview);audio.volume=.65;audio.play().then(()=>{
-      playing=true;icon.textContent='⏸';progressT=setInterval(()=>{
+    audio=new Audio(t.preview);audio.volume=.7;audio.play().then(()=>{
+      playing=true;ico.textContent='⏸';progInt=setInterval(()=>{
         if(!audio.duration)return;bar.style.width=audio.currentTime/audio.duration*100+'%';
-        const s=Math.floor(audio.currentTime);tim.textContent=`${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
-      },120);}).catch(console.log);audio.onended=()=>{playing=false;icon.textContent='▶';clearInterval(progressT);}
+        const s=Math.floor(audio.currentTime);tm.textContent=`${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
+      },100);}).catch(console.log);audio.onended=()=>{playing=false;ico.textContent='▶';clearInterval(progInt);}
   };
 }
-function interact(card,t){
+function setInteractions(card,t){
   let sx=0,dx=0,drag=false,love=card.querySelector('.love-indicator'),nope=card.querySelector('.nope-indicator');
-  const start=e=>{drag=true;sx=(e.touches?e.touches[0].clientX:e.clientX);card.classList.add('dragging');};
+  const start=e=>{drag=true;card.classList.add('dragging');sx=(e.touches?e.touches[0].clientX:e.clientX);};
   const move=e=>{if(!drag)return;dx=(e.touches?e.touches[0].clientX:e.clientX)-sx;
     card.style.transform=`translateX(${dx}px) rotate(${dx/10}deg)`;const o=Math.min(Math.abs(dx)/120,1);
     love.style.opacity=dx>0?o:0;nope.style.opacity=dx<0?o:0;};
@@ -320,11 +329,12 @@ function interact(card,t){
   ['mousedown','touchstart'].forEach(ev=>card.addEventListener(ev,start));
   ['mousemove','touchmove'].forEach(ev=>card.addEventListener(ev,move));
   ['mouseup','mouseleave','touchend'].forEach(ev=>card.addEventListener(ev,end));
-  document.getElementById('likeBtn').onclick=()=>swipe(true);
-  document.getElementById('dislikeBtn').onclick=()=>swipe(false);
+  document.getElementById('like').onclick=()=>swipe(true);
+  document.getElementById('dislike').onclick=()=>swipe(false);
   function swipe(like){
     card.classList.add(like?'swiped-right':'swiped-left');total++;if(like)liked++;updateStats();
-    i++;setTimeout(()=>{const next=tracks[i];if(next)create(next,0);card.remove();},220);
+    idx++;if(queue.length-idx<15)fetchMore(); // keep buffer full
+    setTimeout(()=>{const nxt=queue[idx];if(nxt)createCard(nxt,0);card.remove();},220);
   }
 }
 function updateStats(){likedEl.textContent=liked;totalEl.textContent=total;}
