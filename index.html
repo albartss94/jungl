@@ -5,12 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0" />
 <title>Jungl – Discover New Music</title>
 
-<!-- ====================  FULL CSS  ==================== -->
+<!-- ===============  FULL CSS  =============== -->
 <style>
 /* ---------- GLOBAL ---------- */
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;
      background:#0a0a0a;min-height:100vh;display:flex;flex-direction:column;align-items:center;color:#fff;overflow:hidden}
+
+/* ---------- ERROR BANNER ---------- */
+.error-banner{position:fixed;top:0;left:0;right:0;background:#ff4458;color:#fff;padding:10px 15px;
+              font-size:14px;text-align:center;z-index:1000;display:none}
 
 /* ---------- HEADER ---------- */
 .header{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);width:100%;padding:20px;
@@ -119,7 +123,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 </head>
 <body>
 
-<!-- ================= HEADER ================= -->
+<!-- error banner -->
+<div class="error-banner" id="err"></div>
+
+<!-- =============== HEADER =============== -->
 <div class="header">
   <div class="logo-section">
     <div class="logo">
@@ -129,7 +136,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
         <path d="M20 12l7 5v6l-7 5-7-5v-6Z" fill="#0a0a0a"/><circle cx="20" cy="20" r="3" fill="url(#grad)"/>
       </svg>
     </div>
-    <div><div class="brand-name">jungl</div><div class="tagline">Discover your sound</div></div>
+    <div>
+      <div class="brand-name">jungl</div>
+      <div class="tagline">Discover your sound</div>
+    </div>
   </div>
   <div class="login-section" id="loginSection">
     <button class="login-button" id="headerLoginBtn">Connect Spotify</button>
@@ -137,7 +147,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
   <div class="user-info" id="userInfo"><span id="userName">User</span><div class="user-avatar"></div></div>
 </div>
 
-<!-- ================= APP ================= -->
+<!-- =============== APP =============== -->
 <div class="app-container">
   <!-- login prompt -->
   <div class="login-prompt" id="loginPrompt">
@@ -170,42 +180,43 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
   <div class="stats" id="stats" style="display:none"><span id="liked">0</span> liked • <span id="total">0</span> heard</div>
 </div>
 
-<!-- ================= SCRIPT ================= -->
+<!-- =============== SCRIPT =============== -->
 <script>
 /* ---------- CONFIG & HELPERS ---------- */
 const CID='564aa538caf242638e9f895679012e50';
 const RED='https://albartss94.github.io/jungl/';
 const AUTH='https://accounts.spotify.com/authorize';
-const TOKEN='https://accounts.spotify.com/api/token';
+const TOKEN_URL='https://accounts.spotify.com/api/token';
 const API='https://api.spotify.com/v1';
-const SCOPES=['user-read-private','user-read-email','playlist-modify-public','playlist-modify-private','user-top-read'];
+const SCOPES=['user-read-private','user-read-email','playlist-modify-public','playlist-modify-private'];
 
-const rs=l=>[...crypto.getRandomValues(new Uint8Array(l))].map(x=>'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[x%62]).join('');
-const sha=async t=>crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));
+const rand=l=>[...crypto.getRandomValues(new Uint8Array(l))].map(x=>'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[x%62]).join('');
+const sha=async s=>crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
 const b64u=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
+const banner=document.getElementById('err');
+const showErr=m=>{banner.textContent=m;banner.style.display='block';setTimeout(()=>banner.style.display='none',8000)};
 
 /* ---------- STATE ---------- */
-let access=null,seeds=[],chosen=[],queue=[],idx=0,liked=0,total=0,
+let token=null,seeds=[],chosen=[],queue=[],idx=0,liked=0,total=0,
     audio=null,playing=false,progInt=null;
 
 /* ---------- DOM ---------- */
-const overlay=document.getElementById('overlay'),grid=document.getElementById('genreGrid'),start=document.getElementById('startBtn');
-const deck=document.getElementById('deck'),actions=document.getElementById('actions');
-const likedEl=document.getElementById('liked'),totalEl=document.getElementById('total');
+const overlay=document.getElementById('overlay'),grid=document.getElementById('genreGrid'),
+      start=document.getElementById('startBtn'),deck=document.getElementById('deck'),
+      actions=document.getElementById('actions'),likedEl=document.getElementById('liked'),totalEl=document.getElementById('total');
 
-/* ---------- LOGIN ---------- */
+/* ---------- LOGIN FLOW ---------- */
 async function login(){
-  const ver=rs(64);sessionStorage.setItem('ver',ver);
-  const chal=b64u(await sha(ver)),state=rs(16);sessionStorage.setItem('st',state);
-  const qs=new URLSearchParams({response_type:'code',client_id:CID,redirect_uri:RED,code_challenge_method:'S256',
-    code_challenge:chal,state,scope:SCOPES.join(' ')});
+  const ver=rand(64);sessionStorage.setItem('ver',ver);
+  const chal=b64u(await sha(ver)),state=rand(16);sessionStorage.setItem('st',state);
+  const qs=new URLSearchParams({response_type:'code',client_id:CID,redirect_uri:RED,
+    code_challenge_method:'S256',code_challenge:chal,state,scope:SCOPES.join(' ')});
   location.href=`${AUTH}?${qs}`;
 }
 async function exchange(code){
-  const form=new URLSearchParams({grant_type:'authorization_code',client_id:CID,code,redirect_uri:RED,
+  const body=new URLSearchParams({grant_type:'authorization_code',client_id:CID,code,redirect_uri:RED,
     code_verifier:sessionStorage.getItem('ver')});
-  const res=await fetch(TOKEN,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:form});
-  return res.json();
+  return fetch(TOKEN_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body}).then(r=>r.json());
 }
 
 /* ---------- INIT ---------- */
@@ -215,39 +226,39 @@ window.addEventListener('load',async()=>{
 
   const p=new URLSearchParams(location.search),code=p.get('code'),state=p.get('state');
   if(code){
-    if(state!==sessionStorage.getItem('st'))return alert('state error');
-    const tok=await exchange(code);if(!tok.access_token)return alert('auth error');
-    access=tok.access_token;sessionStorage.setItem('token',access);history.replaceState({},'',RED);
-  }else access=sessionStorage.getItem('token');
+    if(state!==sessionStorage.getItem('st'))return showErr('OAuth state mismatch');
+    const data=await exchange(code);if(!data.access_token)return showErr('Token exchange failed');
+    token=data.access_token;sessionStorage.setItem('tok',token);history.replaceState({},'',RED);
+  }else token=sessionStorage.getItem('tok');
 
-  if(access){
+  if(token){
     document.getElementById('loginPrompt').style.display='none';
     document.getElementById('loginSection').style.display='none';
     document.getElementById('userInfo').style.display='flex';
-    fetch(`${API}/me`,{headers:{Authorization:`Bearer ${access}`}})
+    fetch(`${API}/me`,{headers:{Authorization:`Bearer ${token}`}})
       .then(r=>r.json()).then(u=>{document.getElementById('userName').textContent=u.display_name||'User';});
-    loadSeeds();
+    await loadSeeds();
   }
 });
 
-/* ---------- GENRE SEEDS ---------- */
+/* ---------- GENRE SEED LOADER ---------- */
 async function loadSeeds(){
-  overlay.style.display='flex';start.disabled=true;
+  overlay.style.display='flex';grid.innerHTML='<div class="loading"><div class="loading-spinner"></div></div>';start.disabled=true;
   try{
-    const res=await fetch(`${API}/recommendations/available-genre-seeds`,
-      {headers:{Authorization:`Bearer ${access}`}}).then(r=>r.json());
-    seeds=res.genres||[];
-  }catch(e){seeds=[];}
+    const r=await fetch(`${API}/recommendations/available-genre-seeds`,
+      {headers:{Authorization:`Bearer ${token}`}});
+    if(!r.ok){const e=await r.json();showErr(`Seed error ${r.status}: ${e.error?.message||e}`);}
+    seeds=(await r.json()).genres||[];
+  }catch(e){showErr('Network error while loading genre seeds');seeds=[];}
   if(!seeds.length){
-    seeds=['pop','rock','hip-hop','edm','dance','house','indie','electronic','r-n-b','jazz','classical','metal',
-           'folk','funk','k-pop','latin','reggae','soul','techno','trance','blues','country','ambient','disco',
-           'punk','gospel','happy','sad','chill'];
+    seeds=['pop','rock','hip-hop','edm','dance','house','indie','electronic','jazz','classical',
+           'metal','folk','latin','soul','k-pop','reggae','country','ambient','blues','funk','techno','trance'];
   }
   buildGrid();
 }
 function buildGrid(){
-  grid.innerHTML='';chosen=[];const show=[...seeds].slice(0,36).sort();
-  show.forEach(g=>{
+  grid.innerHTML='';chosen=[];start.disabled=true;
+  [...seeds].slice(0,36).sort().forEach(g=>{
     const div=document.createElement('div');div.className='genre-item';div.textContent=g;
     div.onclick=()=>{
       div.classList.toggle('selected');
@@ -260,7 +271,7 @@ function buildGrid(){
   start.onclick=startApp;
 }
 
-/* ---------- TRACK LOADER ---------- */
+/* ---------- TRACK FETCHER ---------- */
 async function startApp(){
   overlay.style.display='none';actions.style.display='none';deck.innerHTML='<div class="loading"><div class="loading-spinner"></div></div>';
   queue=[];idx=liked=total=0;updateStats();
@@ -269,13 +280,14 @@ async function startApp(){
 async function fetchMore(){
   try{
     const qs=new URLSearchParams({seed_genres:chosen.slice(0,5).join(','),limit:80,market:'from_token'});
-    const rec=await fetch(`${API}/recommendations?${qs}`,
-      {headers:{Authorization:`Bearer ${access}`}}).then(r=>r.json());
-    const more=rec.tracks.filter(t=>t.preview_url).map(t=>({
-      id:t.id,name:t.name,artists:t.artists,album:t.album,preview:t.preview_url,pop:t.popularity
-    }));
+    const r=await fetch(`${API}/recommendations?${qs}`,
+      {headers:{Authorization:`Bearer ${token}`}`});
+    if(!r.ok){const e=await r.json();return showErr(`Rec error ${r.status}: ${e.error?.message||e}`);}
+    const j=await r.json();
+    const more=j.tracks.filter(t=>t.preview_url);
+    console.log(`Fetched ${more.length} playable / ${j.tracks.length} total`);
     queue.push(...more.sort(()=>Math.random()-.5));
-  }catch(e){console.error(e);}
+  }catch(e){showErr('Network error while loading tracks')}
   if(!queue.length)queue.push(...demo);
 }
 
@@ -288,21 +300,21 @@ const demo=[{id:'d1',name:'Electric Dreams',artists:[{name:'Neon Pulse'}],
 /* ---------- RENDER & INTERACTION ---------- */
 function renderDeck(){
   deck.classList.add('active');deck.innerHTML='';actions.style.display='flex';
-  for(let k=0;k<Math.min(2,queue.length-idx);k++)createCard(queue[idx+k],k);
+  for(let n=0;n<Math.min(2,queue.length-idx);n++)newCard(queue[idx+n],n);
 }
-function createCard(t,pos){
+function newCard(t,pos){
   const c=document.createElement('div');c.className='card';c.style.zIndex=10-pos;
   c.style.transform=`scale(${1-pos*.05}) translateY(${pos*10}px)`;
   c.innerHTML=`<div class="card-content"><div class="album-art">
-    <img src="${t.album.images[0]?.url||''}" onerror="this.style.display='none'"><div class="audio-player">
-      <button class="play-button"><span class="play-icon">▶</span></button>
+    <img src="${t.album.images[0]?.url||''}" onerror="this.style.display='none'">
+    <div class="audio-player"><button class="play-button"><span class="play-icon">▶</span></button>
       <div class="progress-bar"><div class="progress"></div></div><span class="time">0:00</span></div></div>
     <div class="song-info"><h2>${t.name}</h2><p class="artist">${t.artists[0].name}</p>
       <p class="genre">${chosen.join(', ')}</p>
       <div class="popularity"><span>Popularity</span><div class="popularity-bar">
         <div class="popularity-fill" style="width:${t.pop}%"></div></div><span>${t.pop}%</span></div></div>
     <div class="love-indicator">LOVE</div><div class="nope-indicator">NOPE</div></div>`;
-  if(pos===0){setInteractions(c,t);audioControls(c,t);}
+  if(pos===0){swipeLogic(c,t);audioControls(c,t);}
   deck.appendChild(c);
 }
 function audioControls(card,t){
@@ -318,9 +330,9 @@ function audioControls(card,t){
       },100);}).catch(console.log);audio.onended=()=>{playing=false;ico.textContent='▶';clearInterval(progInt);}
   };
 }
-function setInteractions(card,t){
+function swipeLogic(card,t){
   let sx=0,dx=0,drag=false,love=card.querySelector('.love-indicator'),nope=card.querySelector('.nope-indicator');
-  const start=e=>{drag=true;card.classList.add('dragging');sx=(e.touches?e.touches[0].clientX:e.clientX);};
+  const start=e=>{drag=true;sx=(e.touches?e.touches[0].clientX:e.clientX);card.classList.add('dragging');};
   const move=e=>{if(!drag)return;dx=(e.touches?e.touches[0].clientX:e.clientX)-sx;
     card.style.transform=`translateX(${dx}px) rotate(${dx/10}deg)`;const o=Math.min(Math.abs(dx)/120,1);
     love.style.opacity=dx>0?o:0;nope.style.opacity=dx<0?o:0;};
@@ -333,8 +345,9 @@ function setInteractions(card,t){
   document.getElementById('dislike').onclick=()=>swipe(false);
   function swipe(like){
     card.classList.add(like?'swiped-right':'swiped-left');total++;if(like)liked++;updateStats();
-    idx++;if(queue.length-idx<15)fetchMore(); // keep buffer full
-    setTimeout(()=>{const nxt=queue[idx];if(nxt)createCard(nxt,0);card.remove();},220);
+    idx++;if(queue.length-idx<15)fetchMore();setTimeout(()=>{
+      const next=queue[idx];if(next)newCard(next,0);card.remove();
+    },220);
   }
 }
 function updateStats(){likedEl.textContent=liked;totalEl.textContent=total;}
