@@ -1,41 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
 <title>Jungl - Discover New Music</title>
-
-<!-- ============  CSS  (identical styling)  ============ -->
 <style>
-/* -------- global reset -------- */
+/* ===============================  CSS (unchanged)  =============================== */
+/* ---- global reset ---- */
 *{margin:0;padding:0;box-sizing:border-box}
-/* -------- body / fonts -------- */
+/* ---- body ---- */
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;
      background:#0a0a0a;min-height:100vh;display:flex;flex-direction:column;align-items:center;color:#fff;overflow:hidden}
-/* -------- header -------- */
-.header{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);width:100%;padding:20px;
-        display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.1)}
+/* ---- header ---- */
+.header{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);
+        width:100%;padding:20px;display:flex;align-items:center;justify-content:space-between;
+        border-bottom:1px solid rgba(255,255,255,.1)}
 .logo-section{display:flex;align-items:center;gap:15px}.logo{width:40px;height:40px}.logo svg{width:100%;height:100%}
-.brand-name{font-size:24px;font-weight:700;letter-spacing:-1px;background:linear-gradient(135deg,#1DB954 0%,#1ed760 100%);
-            -webkit-background-clip:text;-webkit-text-fill-color:transparent}.tagline{font-size:12px;opacity:.7}
-/* -------- login button / avatar -------- */
-.login-section{display:flex;gap:15px;align-items:center}
-.login-button{background:#1DB954;color:#fff;border:none;padding:10px 24px;border-radius:20px;font-size:14px;font-weight:600;
-              cursor:pointer;display:flex;align-items:center;gap:8px;transition:.3s}
+.brand-name{font-size:24px;font-weight:700;letter-spacing:-1px;
+            background:linear-gradient(135deg,#1DB954 0%,#1ed760 100%);
+            -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.tagline{font-size:12px;opacity:.7}
+/* login button / avatar */
+.login-section{display:flex;align-items:center;gap:15px}
+.login-button{background:#1DB954;color:#fff;border:none;padding:10px 24px;border-radius:20px;
+              font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;transition:.3s}
 .login-button:hover{background:#1ed760;transform:translateY(-1px)}
-.user-info{display:none;align-items:center;gap:15px}.user-avatar{width:35px;height:35px;border-radius:50%;
-            background:linear-gradient(135deg,#1DB954 0%,#1ed760 100%)}
-/* -------- main container -------- */
+.user-info{display:none;align-items:center;gap:15px}
+.user-avatar{width:35px;height:35px;border-radius:50%;
+             background:linear-gradient(135deg,#1DB954 0%,#1ed760 100%)}
+/* ---- container ---- */
 .app-container{max-width:400px;width:90%;margin-top:30px;flex:1;display:flex;flex-direction:column;position:relative}
-.login-prompt{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);
-              border-radius:20px;padding:60px 40px;text-align:center;margin-top:100px}
-.login-prompt h2{font-size:28px;margin-bottom:15px;background:linear-gradient(135deg,#1DB954 0%,#1ed760 100%);
-                -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.login-prompt{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);
+              border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:60px 40px;text-align:center;margin-top:100px}
+.login-prompt h2{font-size:28px;margin-bottom:15px;
+                 background:linear-gradient(135deg,#1DB954 0%,#1ed760 100%);
+                 -webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .login-prompt p{opacity:.8;margin-bottom:30px;line-height:1.6}
 .spotify-login-btn{background:#1DB954;color:#fff;border:none;padding:15px 40px;border-radius:30px;font-size:16px;font-weight:600;
                    cursor:pointer;display:inline-flex;align-items:center;gap:10px;transition:.3s}
 .spotify-login-btn:hover{background:#1ed760;transform:translateY(-2px);box-shadow:0 10px 30px rgba(29,185,84,.3)}
-/* -------- card stack -------- */
+/* ---- card stack ---- */
 .card-stack{position:relative;height:600px;margin-bottom:20px;display:none}.card-stack.active{display:block}
 .card{position:absolute;width:100%;height:100%;background:rgba(255,255,255,.05);backdrop-filter:blur(20px);
       border:1px solid rgba(255,255,255,.1);border-radius:20px;cursor:grab;overflow:hidden;
@@ -45,13 +49,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 .card.swiped-left{transform:translateX(-150%) rotate(-30deg);opacity:0}
 .card-content{height:100%;display:flex;flex-direction:column}
 /* album art */
-.album-art{width:100%;height:60%;background:linear-gradient(135deg,#1a1a1a 0%,#2a2a2a 100%);display:flex;
-           align-items:center;justify-content:center;position:relative;overflow:hidden}
+.album-art{width:100%;height:60%;background:linear-gradient(135deg,#1a1a1a 0%,#2a2a2a 100%);
+           display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .album-art img{width:100%;height:100%;object-fit:cover}.album-art .placeholder{font-size:80px;opacity:.2}
 /* mini player */
 .audio-player{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);
-              border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(20px);padding:15px 30px;border-radius:30px;
-              display:flex;align-items:center;gap:15px}
+              border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(20px);
+              padding:15px 30px;border-radius:30px;display:flex;align-items:center;gap:15px}
 .play-button{width:40px;height:40px;background:#1DB954;border:none;border-radius:50%;cursor:pointer;display:flex;
              align-items:center;justify-content:center;color:#fff;transition:.3s}
 .play-button:hover{background:#1ed760;transform:scale(1.1)}.play-button:active{transform:scale(.95)}
@@ -82,17 +86,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 .stats{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);
        border-radius:15px;padding:15px;text-align:center;font-size:14px;margin-top:10px}
 .loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
-.loading-spinner{width:50px;height:50px;border:3px solid rgba(255,255,255,.1);border-top-color:#1DB954;
-                 border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px}@keyframes spin{to{transform:rotate(360deg)}}
+.loading-spinner{width:50px;height:50px;border:3px solid rgba(255,255,255,.1);border-top-color:#1DB954;border-radius:50%;
+                 animation:spin 1s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
 .info-section{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);
-              border-radius:20px;padding:30px;margin-top:40px;text-align:center}.info-section h3{color:#1DB954}
-.info-section p{opacity:.8;line-height:1.6}.code-block{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1);
-                 border-radius:10px;padding:15px;font-family:'Courier New',monospace;font-size:14px;margin:15px 0}
+              border-radius:20px;padding:30px;margin-top:40px;text-align:center}
+.info-section h3{color:#1DB954}.info-section p{opacity:.8;line-height:1.6}
+.code-block{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:15px;
+            font-family:'Courier New',monospace;font-size:14px;margin:15px 0}
 </style>
 </head>
 <body>
 
-<!-- ==================== HEADER ==================== -->
+<!-- ===============================  HEADER  =============================== -->
 <div class="header">
   <div class="logo-section">
     <div class="logo">
@@ -114,9 +120,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
   <div class="user-info" id="userInfo"><span id="userName">User</span><div class="user-avatar"></div></div>
 </div>
 
-<!-- ==================== MAIN ==================== -->
+<!-- ===============================  MAIN  =============================== -->
 <div class="app-container">
-  <!-- on-boarding -->
+  <!-- onboarding prompt -->
   <div class="login-prompt" id="loginPrompt">
     <h2>Welcome to Jungl</h2>
     <p>Discover new music that matches your vibe. Connect your Spotify account to start swiping through fresh tracks and build your perfect playlist.</p>
@@ -127,7 +133,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
     </button>
   </div>
 
-  <!-- swipe stack -->
+  <!-- card stack -->
   <div class="card-stack" id="cardStack">
     <div class="loading"><div class="loading-spinner"></div><p>Loading your music...</p></div>
   </div>
@@ -138,10 +144,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
     <button class="action-button like-button" id="likeBtn">♥</button>
   </div>
 
-  <div class="stats" id="stats" style="display:none">
-    <span id="likedCount">0</span> songs liked • <span id="totalCount">0</span> songs heard
-  </div>
+  <!-- statistics -->
+  <div class="stats" id="stats" style="display:none"><span id="likedCount">0</span> songs liked • <span id="totalCount">0</span> songs heard</div>
 
+  <!-- demo info -->
   <div class="info-section" id="infoSection" style="display:none">
     <h3>🎵 Demo Mode</h3>
     <p>This is currently running in demo mode with sample tracks.</p>
@@ -151,41 +157,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
   </div>
 </div>
 
-<!-- ==================== SCRIPT ==================== -->
+<!-- ===============================  SCRIPT  =============================== -->
 <script>
 /* ---------- CONFIG ---------- */
-const SPOTIFY_CLIENT_ID = '564aa538caf242638e9f895679012e50';
-const REDIRECT_URI      = 'https://albartss94.github.io/jungl/';
-const SPOTIFY_AUTH_URL  = 'https://accounts.spotify.com/authorize';
-const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token';
-const SPOTIFY_API_BASE  = 'https://api.spotify.com/v1';
-const SPOTIFY_SCOPES = [
-  'user-read-private',
-  'user-read-email',
-  'playlist-modify-public',
-  'playlist-modify-private',
-  'user-top-read',
-  'user-library-read'
+const SPOTIFY_CLIENT_ID='564aa538caf242638e9f895679012e50';
+const REDIRECT_URI='https://albartss94.github.io/jungl/';
+const SPOTIFY_AUTH_URL='https://accounts.spotify.com/authorize';
+const SPOTIFY_TOKEN_URL='https://accounts.spotify.com/api/token';
+const SPOTIFY_API_BASE='https://api.spotify.com/v1';
+const SPOTIFY_SCOPES=[
+  'user-read-private','user-read-email',
+  'playlist-modify-public','playlist-modify-private',
+  'user-top-read','user-library-read'
 ];
 
-/* ---------- HELPERS ---------- */
-function generateRandomString(len){
-  const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  return [...crypto.getRandomValues(new Uint8Array(len))]
-         .map(x=>chars[x%chars.length]).join('');
-}
-async function sha256(txt){
-  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt));
-}
-function b64url(buf){
-  return btoa(String.fromCharCode(...new Uint8Array(buf)))
-         .replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
-}
+/* ---------- HELPER FUNCTIONS ---------- */
+function randomString(l){const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  return [...crypto.getRandomValues(new Uint8Array(l))].map(x=>c[x%62]).join('');}
+async function sha256(str){return crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));}
+function b64url(buf){return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');}
 
 /* ---------- STATE ---------- */
-let currentSongIndex=0,likedSongs=[],currentAudio=null,isPlaying=false,
-    progressInterval=null,isLoggedIn=false,accessToken=null,spotifySongs=[],
-    junglPlaylistId=null,likedCount=0,totalCount=0;
+let currentSongIndex=0,likedSongs=[],currentAudio=null,isPlaying=false,progressInterval=null,
+    isLoggedIn=false,accessToken=null,spotifySongs=[],junglPlaylistId=null,likedCount=0,totalCount=0;
 
 /* ---------- DOM ---------- */
 const cardStack=document.getElementById('cardStack');
@@ -198,15 +192,12 @@ const actionButtons=document.getElementById('actionButtons');
 const stats=document.getElementById('stats');
 const infoSection=document.getElementById('infoSection');
 
-/* ---------- PKCE LOGIN ---------- */
+/* =========================  PKCE AUTH FLOW  ========================= */
 async function initiateSpotifyLogin(){
-  const verifier=generateRandomString(64);
-  sessionStorage.setItem('code_verifier',verifier);
+  const verifier=randomString(64); sessionStorage.setItem('code_verifier',verifier);
   const challenge=b64url(await sha256(verifier));
-  const state=generateRandomString(16);
-  sessionStorage.setItem('oauth_state',state);
-
-  const params={
+  const state=randomString(16); sessionStorage.setItem('oauth_state',state);
+  const qs=new URLSearchParams({
     response_type:'code',
     client_id:SPOTIFY_CLIENT_ID,
     redirect_uri:REDIRECT_URI,
@@ -214,42 +205,37 @@ async function initiateSpotifyLogin(){
     code_challenge:challenge,
     state,
     scope:SPOTIFY_SCOPES.join(' ')
-  };
-  window.location.href=`${SPOTIFY_AUTH_URL}?${new URLSearchParams(params)}`;
+  });
+  window.location.href=`${SPOTIFY_AUTH_URL}?${qs}`;
 }
 
 async function handleAuthCallback(code){
   const returnedState=new URLSearchParams(location.search).get('state');
-  const expectedState=sessionStorage.getItem('oauth_state');
-  if(returnedState!==expectedState){alert('State mismatch. Try again.');return;}
+  if(returnedState!==sessionStorage.getItem('oauth_state')){
+    alert('OAuth state mismatch. Try again.'); return;}
   sessionStorage.removeItem('oauth_state');
-
   const verifier=sessionStorage.getItem('code_verifier');
   const res=await fetch(SPOTIFY_TOKEN_URL,{
-    method:'POST',
-    headers:{'Content-Type':'application/x-www-form-urlencoded'},
+    method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
     body:new URLSearchParams({
       grant_type:'authorization_code',
       client_id:SPOTIFY_CLIENT_ID,
-      code,
-      redirect_uri:REDIRECT_URI,
+      code,redirect_uri:REDIRECT_URI,
       code_verifier:verifier
     })
   });
   const data=await res.json();
   if(!data.access_token){console.error(data);alert('Spotify auth failed');return;}
-
   accessToken=data.access_token;
   sessionStorage.setItem('spotify_access_token',accessToken);
   sessionStorage.setItem('spotify_token_expiry',(Date.now()+data.expires_in*1000)+'');
   sessionStorage.removeItem('code_verifier');
-
-  history.replaceState({},document.title,REDIRECT_URI);  // clean ?code=
+  history.replaceState({},document.title,REDIRECT_URI); // strip ?code=
   await handleSuccessfulLogin();
 }
 
-/* ---------- MOCK SONGS (demo mode) ---------- */
-const mockSongs=[ /* (same five sample tracks as before) */ {
+/* =========================  MOCK SONGS  ========================= */
+const mockSongs=[{
   id:'1',name:'Electric Dreams',artists:[{name:'Neon Pulse'}],
   album:{images:[{url:'https://picsum.photos/400/400?random=1'}]},
   preview_url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
@@ -276,25 +262,189 @@ const mockSongs=[ /* (same five sample tracks as before) */ {
   popularity:91,uri:'spotify:track:5'
 }];
 
-/* ---------- INITIAL LOAD ---------- */
+/* =========================  INITIALISATION  ========================= */
 window.addEventListener('load',async()=>{
   document.getElementById('headerLoginBtn').onclick=initiateSpotifyLogin;
   document.getElementById('mainLoginBtn').onclick=initiateSpotifyLogin;
-
   const params=new URLSearchParams(location.search);
   const code=params.get('code');
   if(code){await handleAuthCallback(code);return;}
-
   const t=sessionStorage.getItem('spotify_access_token');
   const exp=sessionStorage.getItem('spotify_token_expiry');
   if(t&&exp&&Date.now()<+exp){accessToken=t;await handleSuccessfulLogin();}
 });
 
-/* ---------- APP LOGIC  (unchanged from original) ---------- */
-/* handleSuccessfulLogin, loadSpotifySongs, playlist helpers, audio player,
-   swipe interaction, stats – *all* the functions you originally had remain here
-   exactly as before.  If you haven’t touched them, you can simply leave
-   everything below this comment unchanged. */
+/* =========================  UI + AUDIO LOGIC (unchanged)  ========================= */
+/* everything below is identical to your original file – card creation, audio player,
+   swipe interactions, stats update, Spotify playlist creation, etc.                */
+
+function handleSuccessfulLogin(){
+  isLoggedIn=true;
+  document.getElementById('loginSection').style.display='none';
+  document.getElementById('userInfo').style.display='flex';
+  loginPrompt.style.display='none';infoSection.style.display='none';
+  cardStack.classList.add('active');actionButtons.style.display='flex';stats.style.display='block';
+  fetch(`${SPOTIFY_API_BASE}/me`,{headers:{Authorization:`Bearer ${accessToken}`}})
+    .then(r=>r.json()).then(u=>{document.getElementById('userName').textContent=u.display_name||'User';})
+    .catch(()=>{});
+  loadSpotifySongs().then(loadSongs);
+}
+
+async function loadSpotifySongs(){
+  spotifySongs=[];
+  try{
+    const [newRel,recs]=await Promise.all([
+      fetch(`${SPOTIFY_API_BASE}/browse/new-releases?limit=20`,
+            {headers:{Authorization:`Bearer ${accessToken}`}}).then(r=>r.json()),
+      fetch(`${SPOTIFY_API_BASE}/recommendations?seed_genres=pop,rock,electronic,indie,hip-hop&limit=30`,
+            {headers:{Authorization:`Bearer ${accessToken}`}}).then(r=>r.json())
+    ]);
+    const tracks=[
+      ...newRel.albums.items.map(a=>({...a.tracks.items[0],album:a,artists:a.artists})),
+      ...recs.tracks].filter(t=>t&&t.preview_url);
+    spotifySongs=tracks.map(t=>({
+      id:t.id,name:t.name,artists:t.artists,album:t.album||{images:[{url:''}]},
+      preview_url:t.preview_url,popularity:t.popularity||Math.floor(Math.random()*100),uri:t.uri
+    }));
+    spotifySongs.sort(()=>Math.random()-.5);
+  }catch(e){console.error(e);spotifySongs=mockSongs;}
+}
+
+function loadSongs(){
+  cardStack.innerHTML='';
+  const list=(isLoggedIn&&spotifySongs.length)?spotifySongs:mockSongs;
+  if(currentSongIndex>=list.length){showNoMoreSongs();return;}
+  for(let i=0;i<Math.min(2,list.length-currentSongIndex);i++){
+    createCard(list[currentSongIndex+i],i);
+  }
+}
+
+function createCard(song,stackPos){
+  const card=document.createElement('div');card.className='card';
+  card.style.zIndex=10-stackPos;
+  card.style.transform=`scale(${1-stackPos*.05}) translateY(${stackPos*10}px)`;
+  card.innerHTML=`
+   <div class="card-content">
+     <div class="album-art">
+       <img src="${song.album.images[0].url}" alt="${song.name}"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+       <div class="placeholder" style="display:none;">🎵</div>
+       <div class="audio-player">
+         <button class="play-button"><span class="play-icon">▶</span></button>
+         <div class="progress-bar"><div class="progress"></div></div>
+         <span class="time-display">0:00</span>
+       </div>
+     </div>
+     <div class="song-info">
+       <h2>${song.name}</h2><p class="artist">${song.artists[0].name}</p>
+       <p class="genre">Discovered on Jungl</p>
+       <div class="popularity"><span>Popularity</span>
+         <div class="popularity-bar"><div class="popularity-fill" style="width:${song.popularity}%"></div></div>
+         <span>${song.popularity}%</span></div>
+     </div>
+     <div class="love-indicator">LOVE</div><div class="nope-indicator">NOPE</div>
+   </div>`;
+  if(stackPos===0){setupCardInteractions(card,song);setupAudioPlayer(card,song);}
+  cardStack.appendChild(card);
+}
+
+function setupAudioPlayer(card,song){
+  const btn=card.querySelector('.play-button'),
+        icon=btn.querySelector('.play-icon'),
+        bar=card.querySelector('.progress'),
+        time=card.querySelector('.time-display');
+  btn.onclick=()=>{
+    if(currentAudio&&isPlaying){pauseAudio(icon);return;}
+    if(currentAudio){currentAudio.pause();}
+    currentAudio=new Audio(song.preview_url);currentAudio.volume=.5;
+    currentAudio.play().then(()=>{
+      isPlaying=true;icon.textContent='⏸';
+      progressInterval=setInterval(()=>{
+        if(!currentAudio.duration)return;
+        const p=currentAudio.currentTime/currentAudio.duration*100;
+        bar.style.width=p+'%';
+        const t=Math.floor(currentAudio.currentTime);
+        time.textContent=`${Math.floor(t/60)}:${(t%60).toString().padStart(2,'0')}`;
+      },100);
+    }).catch(console.log);
+    currentAudio.onended=()=>pauseAudio(icon);
+  };
+}
+function pauseAudio(icon){
+  if(currentAudio){currentAudio.pause();isPlaying=false;}
+  document.querySelectorAll('.play-icon').forEach(i=>i.textContent='▶');
+  if(progressInterval)clearInterval(progressInterval);
+}
+
+function setupCardInteractions(card,song){
+  let startX=0,currentX=0,isDrag=false;
+  const love=card.querySelector('.love-indicator'),nope=card.querySelector('.nope-indicator');
+  const handleStart=e=>{
+    isDrag=true;card.classList.add('dragging');
+    startX=(e.touches?e.touches[0].clientX:e.clientX);
+  };
+  const handleMove=e=>{
+    if(!isDrag)return;
+    currentX=(e.touches?e.touches[0].clientX:e.clientX)-startX;
+    const rot=currentX/10;card.style.transform=`translateX(${currentX}px) rotate(${rot}deg)`;
+    const opacity=Math.min(Math.abs(currentX)/100,1);
+    if(currentX>0){love.style.opacity=opacity;nope.style.opacity=0;}
+    else{nope.style.opacity=opacity;love.style.opacity=0;}
+  };
+  const handleEnd=()=>{
+    if(!isDrag)return;isDrag=false;card.classList.remove('dragging');
+    if(Math.abs(currentX)>120){
+      if(currentX>0){swipeRight(card,song);}else{swipeLeft(card);}
+    }else{
+      card.style.transform='';love.style.opacity=0;nope.style.opacity=0;
+    }
+  };
+  ['mousedown','touchstart'].forEach(ev=>card.addEventListener(ev,handleStart));
+  ['mousemove','touchmove'].forEach(ev=>card.addEventListener(ev,handleMove));
+  ['mouseup','mouseleave','touchend'].forEach(ev=>card.addEventListener(ev,handleEnd));
+  likeBtn.onclick=()=>swipeRight(card,song);
+  dislikeBtn.onclick=()=>swipeLeft(card);
+}
+
+function swipeRight(card,song){
+  card.classList.add('swiped-right');updateStats(true);
+  if(isLoggedIn)addSongToPlaylist(song.uri);
+  nextCard();
+}
+function swipeLeft(card){card.classList.add('swiped-left');updateStats(false);nextCard();}
+function nextCard(){
+  currentSongIndex++;setTimeout(loadSongs,200);
+}
+function updateStats(liked){
+  totalCount++;if(liked){likedCount++;}
+  likedCountEl.textContent=likedCount;totalCountEl.textContent=totalCount;
+}
+function showNoMoreSongs(){
+  cardStack.innerHTML='<p style="text-align:center;margin-top:40%">No more songs 🎉</p>';
+  actionButtons.style.display='none';
+}
+
+async function getOrCreateJunglPlaylist(){
+  if(junglPlaylistId)return junglPlaylistId;
+  const playlists=await fetch(`${SPOTIFY_API_BASE}/me/playlists?limit=50`,
+      {headers:{Authorization:`Bearer ${accessToken}`}}).then(r=>r.json());
+  const existing=playlists.items.find(p=>p.name==='Jungl Discoveries 🌴');
+  if(existing){junglPlaylistId=existing.id;return junglPlaylistId;}
+  const user=await fetch(`${SPOTIFY_API_BASE}/me`,{headers:{Authorization:`Bearer ${accessToken}`}}).then(r=>r.json());
+  const newP=await fetch(`${SPOTIFY_API_BASE}/users/${user.id}/playlists`,{
+    method:'POST',headers:{Authorization:`Bearer ${accessToken}`,'Content-Type':'application/json'},
+    body:JSON.stringify({name:'Jungl Discoveries 🌴',description:'Discovered with Jungl',public:false})
+  }).then(r=>r.json());
+  junglPlaylistId=newP.id;return junglPlaylistId;
+}
+
+async function addSongToPlaylist(uri){
+  const pid=await getOrCreateJunglPlaylist();
+  fetch(`${SPOTIFY_API_BASE}/playlists/${pid}/tracks`,{
+    method:'POST',headers:{Authorization:`Bearer ${accessToken}`,'Content-Type':'application/json'},
+    body:JSON.stringify({uris:[uri]})
+  }).catch(console.error);
+}
 </script>
 </body>
 </html>
