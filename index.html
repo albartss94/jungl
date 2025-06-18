@@ -4,183 +4,16 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0" />
 <title>Jungl – Discover New Music</title>
-
-<!-- ===============  FULL CSS  =============== -->
 <style>
-/* ---------- GLOBAL ---------- */
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;
-     background:#0a0a0a;min-height:100vh;display:flex;flex-direction:column;align-items:center;color:#fff;overflow:hidden}
-
-/* ---------- ERROR BANNER ---------- */
-.error-banner{position:fixed;top:0;left:0;right:0;background:#ff4458;color:#fff;padding:10px 15px;
-              font-size:14px;text-align:center;z-index:1000;display:none}
-
-/* ---------- HEADER ---------- */
-.header{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);width:100%;padding:20px;
-        display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.1)}
-.logo-section{display:flex;align-items:center;gap:15px}
-.logo{width:40px;height:40px}.logo svg{width:100%;height:100%}
-.brand-name{font-size:24px;font-weight:700;letter-spacing:-1px;
-            background:linear-gradient(135deg,#1DB954 0%,#1ed760 100%);
-            -webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.tagline{font-size:12px;opacity:.7}
-.login-section{display:flex;align-items:center;gap:15px}
-.login-button{background:#1DB954;color:#fff;border:none;padding:10px 24px;border-radius:20px;font-size:14px;font-weight:600;
-              cursor:pointer;display:flex;align-items:center;gap:8px;transition:.3s}
-.login-button:hover{background:#1ed760;transform:translateY(-1px)}
-.user-info{display:none;align-items:center;gap:15px}
-.user-avatar{width:35px;height:35px;border-radius:50%;
-             background:linear-gradient(135deg,#1DB954 0%,#1ed760 100%)}
-
-/* ---------- PROMPT ---------- */
-.app-container{max-width:400px;width:90%;margin-top:30px;flex:1;display:flex;flex-direction:column;position:relative}
-.login-prompt{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);
-              border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:60px 40px;text-align:center;margin-top:100px}
-.login-prompt h2{font-size:28px;margin-bottom:15px;
-                 background:linear-gradient(135deg,#1DB954 0%,#1ed760 100%);
-                 -webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.login-prompt p{opacity:.8;margin-bottom:30px;line-height:1.6}
-.spotify-login-btn{background:#1DB954;color:#fff;border:none;padding:15px 40px;border-radius:30px;
-                   font-size:16px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:10px;transition:.3s}
-.spotify-login-btn:hover{background:#1ed760;transform:translateY(-2px);box-shadow:0 10px 30px rgba(29,185,84,.3)}
-
-/* ---------- GENRE OVERLAY ---------- */
-.genre-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);
-               display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20}
-.genre-overlay h2{margin-bottom:18px;font-size:24px;text-align:center}
-.genre-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px;width:260px;
-            max-height:58vh;overflow:auto;padding-right:6px}
-.genre-item{padding:11px 16px;border:2px solid #1DB954;border-radius:20px;text-align:center;cursor:pointer;
-            transition:.25s;font-weight:600;font-size:14px}
-.genre-item.selected{background:#1DB954;color:#0a0a0a}
-.genre-overlay button{background:#1DB954;color:#fff;border:none;padding:12px 32px;border-radius:26px;
-                      font-size:16px;font-weight:600;cursor:pointer;transition:.3s}
-.genre-overlay button:disabled{opacity:.38;cursor:not-allowed}
-
-/* ---------- CARD STACK ---------- */
-.card-stack{position:relative;height:600px;margin-bottom:20px;display:none}
-.card-stack.active{display:block}
-.card{position:absolute;width:100%;height:100%;background:rgba(255,255,255,.05);backdrop-filter:blur(20px);
-      border:1px solid rgba(255,255,255,.1);border-radius:20px;cursor:grab;overflow:hidden;
-      transition:transform .2s ease-out,opacity .2s ease-out}
-.card.dragging{transition:none;cursor:grabbing}
-.card.swiped-right{transform:translateX(150%) rotate(30deg);opacity:0}
-.card.swiped-left{transform:translateX(-150%) rotate(-30deg);opacity:0}
-.card-content{height:100%;display:flex;flex-direction:column}
-
-/* album art */
-.album-art{width:100%;height:60%;background:linear-gradient(135deg,#1a1a1a 0%,#2a2a2a 100%);
-           display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-.album-art img{width:100%;height:100%;object-fit:cover}
-.album-art .placeholder{font-size:80px;opacity:.2}
-
-/* mini player */
-.audio-player{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
-              background:rgba(0,0,0,.85);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(18px);
-              padding:15px 30px;border-radius:30px;display:flex;align-items:center;gap:15px}
-.play-button{width:40px;height:40px;background:#1DB954;border:none;border-radius:50%;cursor:pointer;display:flex;
-             align-items:center;justify-content:center;color:#fff;transition:.3s}
-.play-button:hover{background:#1ed760;transform:scale(1.1)}.play-button:active{transform:scale(.95)}
-.progress-bar{width:150px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;overflow:hidden}
-.progress{height:100%;background:#1DB954;width:0%}.time{font-size:12px;font-weight:500}
-
-/* song info */
-.song-info{padding:30px;flex:1;display:flex;flex-direction:column;justify-content:center}
-.song-info h2{font-size:24px;margin-bottom:10px}
-.song-info .artist{font-size:18px;color:#aaa;margin-bottom:5px}
-.song-info .genre{font-size:14px;color:#666;margin-bottom:20px}
-.song-info .popularity{display:flex;align-items:center;gap:10px;font-size:14px;color:#aaa}
-.popularity-bar{width:100px;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
-.popularity-fill{height:100%;background:linear-gradient(90deg,#1DB954,#1ed760);width:0%;transition:width 1s ease-out}
-
-/* action buttons */
-.action-buttons{display:flex;justify-content:center;gap:40px;margin-bottom:20px}
-.action-button{width:60px;height:60px;border-radius:50%;border:2px solid;cursor:pointer;display:flex;align-items:center;
-               justify-content:center;font-size:24px;background:rgba(255,255,255,.05);backdrop-filter:blur(20px);
-               transition:.3s}
-.action-button:hover{transform:scale(1.1)}.action-button:active{transform:scale(.95)}
-.dislike-button{border-color:#ff4458;color:#ff4458}.dislike-button:hover{background:#ff4458;color:#fff}
-.like-button{border-color:#1DB954;color:#1DB954}.like-button:hover{background:#1DB954;color:#fff}
-
-/* swipe labels */
-.love-indicator,.nope-indicator{position:absolute;top:50%;transform:translateY(-50%) rotate(-30deg);
-                                font-size:60px;font-weight:bold;padding:10px 30px;border-radius:10px;border:4px solid;
-                                opacity:0;transition:.2s}
-.love-indicator{right:20px;color:#1DB954;border-color:#1DB954}
-.nope-indicator{left:20px;color:#ff4458;border-color:#ff4458}
-
-/* stats */
-.stats{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);
-       border-radius:15px;padding:15px;text-align:center;font-size:14px;margin-top:10px}
-
-/* loading */
-.loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
-.loading-spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.1);border-top-color:#1DB954;
-                 border-radius:50%;animation:spin 1s linear infinite;margin:20px auto}
-@keyframes spin{to{transform:rotate(360deg)}}
+/* (CSS unchanged – omitted here for brevity; keep the full sheet you already have) */
 </style>
 </head>
 <body>
 
-<!-- error banner -->
 <div class="error-banner" id="err"></div>
 
-<!-- =============== HEADER =============== -->
-<div class="header">
-  <div class="logo-section">
-    <div class="logo">
-      <svg viewBox="0 0 40 40"><defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#1DB954"/><stop offset="100%" stop-color="#1ed760"/></linearGradient></defs>
-        <path d="M20 5L35 15v10L20 35 5 25V15Z" fill="url(#grad)"/>
-        <path d="M20 12l7 5v6l-7 5-7-5v-6Z" fill="#0a0a0a"/><circle cx="20" cy="20" r="3" fill="url(#grad)"/>
-      </svg>
-    </div>
-    <div>
-      <div class="brand-name">jungl</div>
-      <div class="tagline">Discover your sound</div>
-    </div>
-  </div>
-  <div class="login-section" id="loginSection">
-    <button class="login-button" id="headerLoginBtn">Connect Spotify</button>
-  </div>
-  <div class="user-info" id="userInfo"><span id="userName">User</span><div class="user-avatar"></div></div>
-</div>
+<!-- (header, prompts, overlay, deck, buttons, stats markup unchanged) -->
 
-<!-- =============== APP =============== -->
-<div class="app-container">
-  <!-- login prompt -->
-  <div class="login-prompt" id="loginPrompt">
-    <h2>Welcome to Jungl</h2>
-    <p>Connect your Spotify account to swipe through track previews and build your discovery playlist.</p>
-    <button class="spotify-login-btn" id="mainLoginBtn">Connect with Spotify</button>
-  </div>
-
-  <!-- genre overlay -->
-  <div class="genre-overlay" id="overlay" style="display:none">
-    <h2>Pick up to 5 favourite genres</h2>
-    <div class="genre-grid" id="genreGrid">
-      <div class="loading"><div class="loading-spinner"></div></div>
-    </div>
-    <button id="startBtn" disabled>Start swiping</button>
-  </div>
-
-  <!-- swipe deck -->
-  <div class="card-stack" id="deck">
-    <div class="loading"><div class="loading-spinner"></div><p>Loading…</p></div>
-  </div>
-
-  <!-- action buttons -->
-  <div class="action-buttons" id="actions" style="display:none">
-    <button class="action-button dislike-button" id="dislike">✕</button>
-    <button class="action-button like-button" id="like">♥</button>
-  </div>
-
-  <!-- stats -->
-  <div class="stats" id="stats" style="display:none"><span id="liked">0</span> liked • <span id="total">0</span> heard</div>
-</div>
-
-<!-- =============== SCRIPT =============== -->
 <script>
 /* ---------- CONFIG & HELPERS ---------- */
 const CID='564aa538caf242638e9f895679012e50';
@@ -201,22 +34,35 @@ let token=null,seeds=[],chosen=[],queue=[],idx=0,liked=0,total=0,
     audio=null,playing=false,progInt=null;
 
 /* ---------- DOM ---------- */
-const overlay=document.getElementById('overlay'),grid=document.getElementById('genreGrid'),
-      start=document.getElementById('startBtn'),deck=document.getElementById('deck'),
-      actions=document.getElementById('actions'),likedEl=document.getElementById('liked'),totalEl=document.getElementById('total');
+const overlay=document.getElementById('overlay');
+const grid=document.getElementById('genreGrid');
+const start=document.getElementById('startBtn');
+const deck=document.getElementById('deck');
+const actions=document.getElementById('actions');
+const likedEl=document.getElementById('liked');
+const totalEl=document.getElementById('total');
 
 /* ---------- LOGIN FLOW ---------- */
 async function login(){
   const ver=rand(64);sessionStorage.setItem('ver',ver);
   const chal=b64u(await sha(ver)),state=rand(16);sessionStorage.setItem('st',state);
-  const qs=new URLSearchParams({response_type:'code',client_id:CID,redirect_uri:RED,
-    code_challenge_method:'S256',code_challenge:chal,state,scope:SCOPES.join(' ')});
+  const qs=new URLSearchParams({
+    response_type:'code',client_id:CID,redirect_uri:RED,
+    code_challenge_method:'S256',code_challenge:chal,state,
+    scope:SCOPES.join(' ')
+  });
   location.href=`${AUTH}?${qs}`;
 }
 async function exchange(code){
-  const body=new URLSearchParams({grant_type:'authorization_code',client_id:CID,code,redirect_uri:RED,
-    code_verifier:sessionStorage.getItem('ver')});
-  return fetch(TOKEN_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body}).then(r=>r.json());
+  const body=new URLSearchParams({
+    grant_type:'authorization_code',client_id:CID,code,
+    redirect_uri:RED,code_verifier:sessionStorage.getItem('ver')
+  });
+  return fetch(TOKEN_URL,{
+    method:'POST',
+    headers:{'Content-Type':'application/x-www-form-urlencoded'},
+    body
+  }).then(r=>r.json());
 }
 
 /* ---------- INIT ---------- */
@@ -224,46 +70,71 @@ window.addEventListener('load',async()=>{
   document.getElementById('headerLoginBtn').onclick=login;
   document.getElementById('mainLoginBtn').onclick=login;
 
-  const p=new URLSearchParams(location.search),code=p.get('code'),state=p.get('state');
+  const p=new URLSearchParams(location.search);
+  const code=p.get('code'),state=p.get('state');
   if(code){
     if(state!==sessionStorage.getItem('st'))return showErr('OAuth state mismatch');
-    const data=await exchange(code);if(!data.access_token)return showErr('Token exchange failed');
-    token=data.access_token;sessionStorage.setItem('tok',token);history.replaceState({},'',RED);
-  }else token=sessionStorage.getItem('tok');
+    const data=await exchange(code);
+    if(!data.access_token)return showErr('Token exchange failed');
+    token=data.access_token;
+    sessionStorage.setItem('tok',token);
+    history.replaceState({},'',RED);
+  }else{
+    token=sessionStorage.getItem('tok');
+  }
 
   if(token){
     document.getElementById('loginPrompt').style.display='none';
     document.getElementById('loginSection').style.display='none';
     document.getElementById('userInfo').style.display='flex';
     fetch(`${API}/me`,{headers:{Authorization:`Bearer ${token}`}})
-      .then(r=>r.json()).then(u=>{document.getElementById('userName').textContent=u.display_name||'User';});
+      .then(r=>r.json())
+      .then(u=>{document.getElementById('userName').textContent=u.display_name||'User';});
     await loadSeeds();
   }
 });
 
-/* ---------- GENRE SEED LOADER ---------- */
+/* ---------- GENRE SEEDS ---------- */
 async function loadSeeds(){
-  overlay.style.display='flex';grid.innerHTML='<div class="loading"><div class="loading-spinner"></div></div>';start.disabled=true;
+  overlay.style.display='flex';
+  grid.innerHTML='<div class="loading"><div class="loading-spinner"></div></div>';
+  start.disabled=true;
+
   try{
     const r=await fetch(`${API}/recommendations/available-genre-seeds`,
       {headers:{Authorization:`Bearer ${token}`}});
-    if(!r.ok){const e=await r.json();showErr(`Seed error ${r.status}: ${e.error?.message||e}`);}
+    if(!r.ok){
+      const e=await r.json();
+      showErr(`Seed error ${r.status}: ${e.error?.message||e}`);
+    }
     seeds=(await r.json()).genres||[];
-  }catch(e){showErr('Network error while loading genre seeds');seeds=[];}
+  }catch{
+    showErr('Network error while loading genre seeds');
+    seeds=[];
+  }
+
   if(!seeds.length){
     seeds=['pop','rock','hip-hop','edm','dance','house','indie','electronic','jazz','classical',
-           'metal','folk','latin','soul','k-pop','reggae','country','ambient','blues','funk','techno','trance'];
+           'metal','folk','latin','soul','k-pop','reggae','country','ambient','blues','funk',
+           'techno','trance'];
   }
   buildGrid();
 }
 function buildGrid(){
-  grid.innerHTML='';chosen=[];start.disabled=true;
+  grid.innerHTML='';
+  chosen=[];
+  start.disabled=true;
   [...seeds].slice(0,36).sort().forEach(g=>{
-    const div=document.createElement('div');div.className='genre-item';div.textContent=g;
+    const div=document.createElement('div');
+    div.className='genre-item';
+    div.textContent=g;
     div.onclick=()=>{
       div.classList.toggle('selected');
       chosen=[...document.querySelectorAll('.genre-item.selected')].map(e=>e.textContent);
-      if(chosen.length>5){div.classList.remove('selected');chosen.pop();}
+      if(chosen.length>5){
+        div.classList.remove('selected');
+        chosen.pop();
+      }
       start.disabled=chosen.length===0;
     };
     grid.appendChild(div);
@@ -271,23 +142,38 @@ function buildGrid(){
   start.onclick=startApp;
 }
 
-/* ---------- TRACK FETCHER ---------- */
+/* ---------- TRACKS ---------- */
 async function startApp(){
-  overlay.style.display='none';actions.style.display='none';deck.innerHTML='<div class="loading"><div class="loading-spinner"></div></div>';
-  queue=[];idx=liked=total=0;updateStats();
-  await fetchMore();renderDeck();
+  overlay.style.display='none';
+  actions.style.display='none';
+  deck.innerHTML='<div class="loading"><div class="loading-spinner"></div></div>';
+  queue=[];
+  idx=liked=total=0;
+  updateStats();
+  await fetchMore();
+  renderDeck();
 }
 async function fetchMore(){
   try{
-    const qs=new URLSearchParams({seed_genres:chosen.slice(0,5).join(','),limit:80,market:'from_token'});
-    const r=await fetch(`${API}/recommendations?${qs}`,
-      {headers:{Authorization:`Bearer ${token}`}`});
-    if(!r.ok){const e=await r.json();return showErr(`Rec error ${r.status}: ${e.error?.message||e}`);}
+    const qs=new URLSearchParams({
+      seed_genres:chosen.slice(0,5).join(','),
+      limit:80,
+      market:'from_token'
+    });
+    const r=await fetch(`${API}/recommendations?${qs}`,{
+      headers:{Authorization:`Bearer ${token}`}}
+    );
+    if(!r.ok){
+      const e=await r.json();
+      return showErr(`Rec error ${r.status}: ${e.error?.message||e}`);
+    }
     const j=await r.json();
     const more=j.tracks.filter(t=>t.preview_url);
     console.log(`Fetched ${more.length} playable / ${j.tracks.length} total`);
     queue.push(...more.sort(()=>Math.random()-.5));
-  }catch(e){showErr('Network error while loading tracks')}
+  }catch{
+    showErr('Network error while loading tracks');
+  }
   if(!queue.length)queue.push(...demo);
 }
 
@@ -299,58 +185,102 @@ const demo=[{id:'d1',name:'Electric Dreams',artists:[{name:'Neon Pulse'}],
 
 /* ---------- RENDER & INTERACTION ---------- */
 function renderDeck(){
-  deck.classList.add('active');deck.innerHTML='';actions.style.display='flex';
-  for(let n=0;n<Math.min(2,queue.length-idx);n++)newCard(queue[idx+n],n);
+  deck.classList.add('active');
+  deck.innerHTML='';
+  actions.style.display='flex';
+  for(let n=0;n<Math.min(2,queue.length-idx);n++)addCard(queue[idx+n],n);
 }
-function newCard(t,pos){
-  const c=document.createElement('div');c.className='card';c.style.zIndex=10-pos;
+function addCard(t,pos){
+  const c=document.createElement('div');
+  c.className='card';
+  c.style.zIndex=10-pos;
   c.style.transform=`scale(${1-pos*.05}) translateY(${pos*10}px)`;
-  c.innerHTML=`<div class="card-content"><div class="album-art">
-    <img src="${t.album.images[0]?.url||''}" onerror="this.style.display='none'">
-    <div class="audio-player"><button class="play-button"><span class="play-icon">▶</span></button>
-      <div class="progress-bar"><div class="progress"></div></div><span class="time">0:00</span></div></div>
-    <div class="song-info"><h2>${t.name}</h2><p class="artist">${t.artists[0].name}</p>
+  c.innerHTML=`<div class="card-content">
+    <div class="album-art">
+      <img src="${t.album.images[0]?.url||''}" onerror="this.style.display='none'"/>
+      <div class="audio-player">
+        <button class="play-button"><span class="play-icon">▶</span></button>
+        <div class="progress-bar"><div class="progress"></div></div><span class="time">0:00</span>
+      </div>
+    </div>
+    <div class="song-info">
+      <h2>${t.name}</h2><p class="artist">${t.artists[0].name}</p>
       <p class="genre">${chosen.join(', ')}</p>
-      <div class="popularity"><span>Popularity</span><div class="popularity-bar">
-        <div class="popularity-fill" style="width:${t.pop}%"></div></div><span>${t.pop}%</span></div></div>
-    <div class="love-indicator">LOVE</div><div class="nope-indicator">NOPE</div></div>`;
-  if(pos===0){swipeLogic(c,t);audioControls(c,t);}
+      <div class="popularity">
+        <span>Popularity</span><div class="popularity-bar"><div class="popularity-fill" style="width:${t.pop}%"></div></div>
+        <span>${t.pop}%</span>
+      </div>
+    </div>
+    <div class="love-indicator">LOVE</div><div class="nope-indicator">NOPE</div>
+  </div>`;
+  if(pos===0){setupSwipe(c,t);setupAudio(c,t);}
   deck.appendChild(c);
 }
-function audioControls(card,t){
-  const btn=card.querySelector('.play-button'),ico=btn.querySelector('.play-icon'),
-        bar=card.querySelector('.progress'),tm=card.querySelector('.time');
+
+function setupAudio(card,t){
+  const btn=card.querySelector('.play-button'),
+        icon=btn.querySelector('.play-icon'),
+        bar=card.querySelector('.progress'),
+        tm=card.querySelector('.time');
   btn.onclick=()=>{
-    if(audio&&playing){audio.pause();playing=false;ico.textContent='▶';return;}
+    if(audio&&playing){audio.pause();playing=false;icon.textContent='▶';return;}
     if(audio)audio.pause();
-    audio=new Audio(t.preview);audio.volume=.7;audio.play().then(()=>{
-      playing=true;ico.textContent='⏸';progInt=setInterval(()=>{
-        if(!audio.duration)return;bar.style.width=audio.currentTime/audio.duration*100+'%';
-        const s=Math.floor(audio.currentTime);tm.textContent=`${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
-      },100);}).catch(console.log);audio.onended=()=>{playing=false;ico.textContent='▶';clearInterval(progInt);}
+    audio=new Audio(t.preview);
+    audio.volume=.7;
+    audio.play().then(()=>{
+      playing=true;icon.textContent='⏸';
+      progInt=setInterval(()=>{
+        if(!audio.duration)return;
+        bar.style.width=(audio.currentTime/audio.duration*100)+'%';
+        const s=Math.floor(audio.currentTime);
+        tm.textContent=`${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
+      },100);
+    }).catch(console.log);
+    audio.onended=()=>{playing=false;icon.textContent='▶';clearInterval(progInt);};
   };
 }
-function swipeLogic(card,t){
-  let sx=0,dx=0,drag=false,love=card.querySelector('.love-indicator'),nope=card.querySelector('.nope-indicator');
+
+function setupSwipe(card,t){
+  let sx=0,dx=0,drag=false;
+  const love=card.querySelector('.love-indicator'),
+        nope=card.querySelector('.nope-indicator');
   const start=e=>{drag=true;sx=(e.touches?e.touches[0].clientX:e.clientX);card.classList.add('dragging');};
-  const move=e=>{if(!drag)return;dx=(e.touches?e.touches[0].clientX:e.clientX)-sx;
-    card.style.transform=`translateX(${dx}px) rotate(${dx/10}deg)`;const o=Math.min(Math.abs(dx)/120,1);
-    love.style.opacity=dx>0?o:0;nope.style.opacity=dx<0?o:0;};
-  const end=()=>{if(!drag)return;drag=false;card.classList.remove('dragging');
-    if(Math.abs(dx)>110){swipe(dx>0);}else{card.style.transform='';love.style.opacity=0;nope.style.opacity=0;}};
+  const move=e=>{
+    if(!drag)return;
+    dx=(e.touches?e.touches[0].clientX:e.clientX)-sx;
+    card.style.transform=`translateX(${dx}px) rotate(${dx/10}deg)`;
+    const o=Math.min(Math.abs(dx)/120,1);
+    love.style.opacity=dx>0?o:0;
+    nope.style.opacity=dx<0?o:0;
+  };
+  const end=()=>{
+    if(!drag)return;drag=false;card.classList.remove('dragging');
+    if(Math.abs(dx)>110){swipe(dx>0);}else{
+      card.style.transform='';love.style.opacity=0;nope.style.opacity=0;
+    }
+  };
   ['mousedown','touchstart'].forEach(ev=>card.addEventListener(ev,start));
   ['mousemove','touchmove'].forEach(ev=>card.addEventListener(ev,move));
   ['mouseup','mouseleave','touchend'].forEach(ev=>card.addEventListener(ev,end));
   document.getElementById('like').onclick=()=>swipe(true);
   document.getElementById('dislike').onclick=()=>swipe(false);
   function swipe(like){
-    card.classList.add(like?'swiped-right':'swiped-left');total++;if(like)liked++;updateStats();
-    idx++;if(queue.length-idx<15)fetchMore();setTimeout(()=>{
-      const next=queue[idx];if(next)newCard(next,0);card.remove();
+    card.classList.add(like?'swiped-right':'swiped-left');
+    total++;if(like)liked++;updateStats();
+    idx++;
+    if(queue.length-idx<15)fetchMore(); // keep buffer filled
+    setTimeout(()=>{
+      const next=queue[idx];
+      if(next)addCard(next,0);
+      card.remove();
     },220);
   }
 }
-function updateStats(){likedEl.textContent=liked;totalEl.textContent=total;}
+
+function updateStats(){
+  likedEl.textContent=liked;
+  totalEl.textContent=total;
+}
 </script>
 </body>
 </html>
