@@ -438,50 +438,92 @@ async function startApp(){
 
 async function fetchMore(){
   try{
-    // Use search API with better query construction
     const allTracks = [];
     
-    // Try multiple search strategies
+    // First, let's try a very simple search that should definitely work
+    const testParams = {
+      q: 'track:*', // Search for any track
+      type: 'track',
+      limit: 50
+    };
+    
+    const testQs = new URLSearchParams(testParams);
+    console.log('Testing basic search with:', testQs.toString());
+    
+    const testResp = await fetch(`${API}/search?${testQs}`, {
+      headers: {Authorization: `Bearer ${token}`}
+    });
+    
+    if(!testResp.ok) {
+      const errorData = await testResp.text();
+      console.error('Search API error:', testResp.status, errorData);
+      
+      if(testResp.status === 401) {
+        showErr('Session expired. Please refresh and login again.');
+        sessionStorage.removeItem('tok');
+        setTimeout(() => location.reload(), 2000);
+        return;
+      }
+    } else {
+      const testData = await testResp.json();
+      console.log('Search API works! Found tracks:', testData.tracks?.items?.length || 0);
+    }
+    
+    // Now try genre-based searches with simpler queries
     for(const genre of chosen) {
-      // Search by genre keyword (more flexible than genre: filter)
-      const searchParams = {
-        q: genre, // Just the genre name, not genre:"name"
-        type: 'track',
-        limit: 50,
-        market: 'US' // Use specific market for better results
-      };
+      // Try different search approaches
+      const searches = [
+        genre, // Just the genre name
+        `${genre} music`, // Genre + music
+        `top ${genre} hits`, // Popular tracks
+        `best ${genre} songs` // Another variation
+      ];
       
-      const searchQs = new URLSearchParams(searchParams);
-      console.log(`Searching for: ${genre}`);
-      
-      const searchResp = await fetch(`${API}/search?${searchQs}`, {
-        headers: {Authorization: `Bearer ${token}`}
-      });
-      
-      if(searchResp.ok) {
-        const searchData = await searchResp.json();
-        if(searchData.tracks && searchData.tracks.items) {
-          const tracks = searchData.tracks.items;
-          console.log(`Found ${tracks.length} tracks for ${genre}`);
-          allTracks.push(...tracks);
+      for(const searchTerm of searches.slice(0, 2)) { // Try first 2 variations
+        const searchParams = {
+          q: searchTerm,
+          type: 'track',
+          limit: 20
+        };
+        
+        const searchQs = new URLSearchParams(searchParams);
+        console.log(`Searching for: "${searchTerm}"`);
+        
+        const searchResp = await fetch(`${API}/search?${searchQs}`, {
+          headers: {Authorization: `Bearer ${token}`}
+        });
+        
+        if(searchResp.ok) {
+          const searchData = await searchResp.json();
+          if(searchData.tracks && searchData.tracks.items) {
+            const tracks = searchData.tracks.items;
+            console.log(`Found ${tracks.length} tracks for "${searchTerm}"`);
+            allTracks.push(...tracks);
+          }
         }
-      } else {
-        console.error(`Search failed for ${genre}:`, await searchResp.text());
       }
     }
     
-    // Also try searching for popular recent tracks
-    if(allTracks.length < 20) {
-      const yearSearches = ['2024', '2023', '2022'];
-      for(const year of yearSearches) {
+    // If still no tracks, try some guaranteed searches
+    if(allTracks.length < 10) {
+      const popularSearches = [
+        'top hits 2024',
+        'popular songs',
+        'billboard hot 100',
+        'viral hits',
+        'trending music'
+      ];
+      
+      for(const search of popularSearches.slice(0, 2)) {
         const popParams = {
-          q: `year:${year}`,
+          q: search,
           type: 'track',
-          limit: 50,
-          market: 'US'
+          limit: 30
         };
         
         const popQs = new URLSearchParams(popParams);
+        console.log(`Fallback search: "${search}"`);
+        
         const popResp = await fetch(`${API}/search?${popQs}`, {
           headers: {Authorization: `Bearer ${token}`}
         });
@@ -489,60 +531,41 @@ async function fetchMore(){
         if(popResp.ok) {
           const popData = await popResp.json();
           if(popData.tracks && popData.tracks.items) {
+            console.log(`Found ${popData.tracks.items.length} tracks for "${search}"`);
             allTracks.push(...popData.tracks.items);
           }
         }
       }
     }
     
-    // Remove duplicates and filter for tracks with previews
+    // Remove duplicates
     const uniqueTracks = Array.from(new Map(allTracks.map(t => [t.id, t])).values());
-    const tracksWithPreviews = uniqueTracks.filter(t => {
-      return t && t.preview_url && 
-             !likedTracks.find(lt => lt.id === t.id) &&
+    console.log(`Total unique tracks found: ${uniqueTracks.length}`);
+    
+    // Log preview URL stats
+    const tracksWithPreviews = uniqueTracks.filter(t => t && t.preview_url);
+    const tracksWithoutPreviews = uniqueTracks.filter(t => t && !t.preview_url);
+    console.log(`Tracks with preview URLs: ${tracksWithPreviews.length}`);
+    console.log(`Tracks without preview URLs: ${tracksWithoutPreviews.length}`);
+    
+    // Filter out already seen tracks
+    const newTracks = tracksWithPreviews.filter(t => {
+      return !likedTracks.find(lt => lt.id === t.id) &&
              !queue.find(q => q.id === t.id);
     });
     
-    console.log(`Total unique tracks: ${uniqueTracks.length}, with previews: ${tracksWithPreviews.length}`);
-    
-    if(tracksWithPreviews.length > 0) {
-      // Shuffle and add to queue
-      queue.push(...tracksWithPreviews.sort(() => Math.random() - 0.5));
-      console.log(`Queue now has ${queue.length} tracks`);
+    if(newTracks.length > 0) {
+      queue.push(...newTracks.sort(() => Math.random() - 0.5));
+      console.log(`Added ${newTracks.length} new tracks to queue. Total in queue: ${queue.length}`);
+    } else if(tracksWithoutPreviews.length > 0) {
+      showErr(`Found ${uniqueTracks.length} tracks but none have preview URLs. This is a Spotify API limitation.`);
     } else {
-      // Last resort - search for very popular tracks
-      const lastResortParams = {
-        q: 'a', // Single letter searches return many results
-        type: 'track',
-        limit: 50,
-        market: 'US'
-      };
-      
-      const lastQs = new URLSearchParams(lastResortParams);
-      const lastResp = await fetch(`${API}/search?${lastQs}`, {
-        headers: {Authorization: `Bearer ${token}`}
-      });
-      
-      if(lastResp.ok) {
-        const lastData = await lastResp.json();
-        if(lastData.tracks && lastData.tracks.items) {
-          const lastTracks = lastData.tracks.items.filter(t => t.preview_url);
-          if(lastTracks.length > 0) {
-            queue.push(...lastTracks.sort(() => Math.random() - 0.5));
-            showErr('Limited genre results - showing popular tracks instead');
-          }
-        }
-      }
-    }
-    
-    if(queue.length === 0) {
-      console.error('No tracks found at all');
-      showErr('Unable to find tracks. This may be due to Spotify API restrictions or region limitations.');
+      showErr('No tracks found. Check console for details.');
     }
     
   }catch(e){
     console.error('Fetch error:', e);
-    showErr(`Error loading tracks: ${e.message}`);
+    showErr(`Error: ${e.message}. Check console for details.`);
   }
 }
 
