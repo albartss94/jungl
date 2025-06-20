@@ -108,19 +108,34 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 .action-buttons{display:flex;justify-content:center;gap:40px;margin-bottom:20px}
 .action-button{width:60px;height:60px;border-radius:50%;border:2px solid;font-size:24px;cursor:pointer;
                background:rgba(255,255,255,.05);backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:center;
-               transition:.3s}
+               transition:.3s;position:relative}
 .action-button:hover{transform:scale(1.1)}
 .action-button:active{transform:scale(.95)}
 .dislike-button{border-color:#ff4458;color:#ff4458}.dislike-button:hover{background:#ff4458;color:#fff}
 .like-button{border-color:#1DB954;color:#1DB954}.like-button:hover{background:#1DB954;color:#fff}
-.stats{margin-top:10px;padding:15px;border-radius:15px;text-align:center;font-size:14px;
+.button-label{position:absolute;bottom:-25px;font-size:12px;opacity:0.7;white-space:nowrap}
+.stats{margin-top:30px;padding:15px;border-radius:15px;text-align:center;font-size:14px;
        background:rgba(255,255,255,.05);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1)}
+
+/* playlist button */
+.playlist-button{margin-top:15px;background:#1DB954;border:none;color:#fff;padding:12px 24px;
+                 border-radius:20px;font-size:14px;font-weight:600;cursor:pointer;display:none;
+                 transition:.3s;margin:15px auto 0}
+.playlist-button:hover{background:#1ed760;transform:translateY(-1px)}
 
 /* loading spinner */
 .loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
 .loading-spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.1);border-top-color:#1DB954;
                  border-radius:50%;animation:spin 1s linear infinite;margin:20px auto}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* responsive */
+@media (max-width: 480px) {
+  .card-stack{height:500px}
+  .song-info{padding:20px}
+  .song-info h2{font-size:20px}
+  .action-buttons{gap:30px}
+}
 </style>
 </head>
 <body>
@@ -142,7 +157,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
     <div><div class="brand-name">jungl</div><div class="tagline">Discover your sound</div></div>
   </div>
   <div class="login-section" id="loginSection">
-    <button class="login-button" id="headerLoginBtn">Connect Spotify</button>
+    <button class="login-button" id="headerLoginBtn">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M10 0C4.5 0 0 4.5 0 10s4.5 10 10 10 10-4.5 10-10S15.5 0 10 0zm4.6 14.5c-.2.3-.5.4-.8.2-2.2-1.3-5-1.6-8.3-.9-.3.1-.6-.1-.7-.4-.1-.3.1-.6.4-.7 3.6-.8 6.7-.5 9.2 1 .3.2.4.5.2.8zm1.1-2.5c-.2.4-.6.5-1 .3-2.5-1.5-6.3-2-9.3-1.1-.4.1-.8-.1-.9-.5-.1-.4.1-.8.5-.9 3.4-1 7.6-.5 10.5 1.3.4.1.5.5.2.9zm.1-2.6c-3-1.8-8-2-10.9-1.1-.5.2-.9-.1-1.1-.5-.2-.5.1-.9.5-1.1 3.3-1 8.8-.8 12.3 1.3.4.2.6.7.3 1.1-.2.4-.7.5-1.1.3z"/>
+      </svg>
+      Connect Spotify
+    </button>
   </div>
   <div class="user-info" id="userInfo"><span id="userName">User</span><div class="user-avatar"></div></div>
 </div>
@@ -153,7 +173,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
   <div class="login-prompt" id="loginPrompt">
     <h2>Welcome to Jungl</h2>
     <p>Connect your Spotify account to swipe through track previews and build your discovery playlist.</p>
-    <button class="spotify-login-btn" id="mainLoginBtn">Connect with Spotify</button>
+    <button class="spotify-login-btn" id="mainLoginBtn">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.4c-.2.4-.6.5-1 .3-2.6-1.6-6-2-8.9-1.1-.4.1-.8-.1-.9-.5-.1-.4.1-.8.5-.9 3.2-.9 8.1-.5 11.1 1.3.4.1.5.5.2.9zm1.3-3c-.3.4-.8.6-1.2.4-3-1.9-7.6-2.4-11.2-1.3-.5.1-1-.1-1.1-.6-.1-.5.1-1 .6-1.1 4.1-1.2 9.1-.6 12.6 1.5.4.2.6.7.3 1.1zm.1-3.1c-3.6-2.1-9.6-2.3-13.1-1.3-.6.2-1.2-.2-1.3-.7-.2-.6.2-1.2.7-1.3 4-1.2 10.6-.9 14.8 1.5.5.3.7.9.4 1.4-.3.5-.9.7-1.5.4z"/>
+      </svg>
+      Connect with Spotify
+    </button>
   </div>
 
   <!-- genre overlay -->
@@ -172,12 +197,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 
   <!-- buttons -->
   <div class="action-buttons" id="actions" style="display:none">
-    <button class="action-button dislike-button" id="dislike">✕</button>
-    <button class="action-button like-button" id="like">♥</button>
+    <button class="action-button dislike-button" id="dislike">
+      ✕
+      <span class="button-label">Not for me</span>
+    </button>
+    <button class="action-button like-button" id="like">
+      ♥
+      <span class="button-label">Love it!</span>
+    </button>
   </div>
 
   <!-- stats -->
-  <div class="stats" id="stats" style="display:none"><span id="liked">0</span> liked • <span id="total">0</span> heard</div>
+  <div class="stats" id="stats" style="display:none">
+    <span id="liked">0</span> liked • <span id="total">0</span> heard
+    <button class="playlist-button" id="createPlaylist">Create Playlist</button>
+  </div>
 </div>
 
 <!-- ================= SCRIPT ================= -->
@@ -188,7 +222,7 @@ const RED='https://albartss94.github.io/jungl/';
 const AUTH='https://accounts.spotify.com/authorize';
 const TOKEN_URL='https://accounts.spotify.com/api/token';
 const API='https://api.spotify.com/v1';
-const SCOPES=['user-read-private','user-read-email','playlist-modify-public','playlist-modify-private'];
+const SCOPES=['user-read-private','user-read-email','playlist-modify-public','playlist-modify-private','user-top-read'];
 
 const rand=l=>[...crypto.getRandomValues(new Uint8Array(l))].map(x=>'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[x%62]).join('');
 const sha=async s=>crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
@@ -197,12 +231,14 @@ const showErr=m=>{const b=document.getElementById('err');b.textContent=m;b.style
 
 /* ---------- STATE ---------- */
 let token=null,seeds=[],chosen=[],queue=[],idx=0,liked=0,total=0,audio=null,playing=false,prog=null;
+let likedTracks=[], userId=null, userPrefs={genres:{},artists:{},features:{}};
 
 /* ---------- DOM refs ---------- */
 const overlay=document.getElementById('overlay'),grid=document.getElementById('genreGrid'),
       start=document.getElementById('startBtn'),deck=document.getElementById('deck'),
       actions=document.getElementById('actions'),likedEl=document.getElementById('liked'),
-      totalEl=document.getElementById('total');
+      totalEl=document.getElementById('total'),statsEl=document.getElementById('stats'),
+      playlistBtn=document.getElementById('createPlaylist');
 
 /* ---------- LOGIN ---------- */
 async function login(){
@@ -215,30 +251,76 @@ async function login(){
 async function exchange(code){
   const body=new URLSearchParams({grant_type:'authorization_code',client_id:CID,code,
                                   redirect_uri:RED,code_verifier:sessionStorage.getItem('ver')});
-  return fetch(TOKEN_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body}).then(r=>r.json());
+  try {
+    const resp = await fetch(TOKEN_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
+    if (!resp.ok) {
+      const errorText = await resp.text();
+      console.error('Token exchange failed:', errorText);
+      throw new Error('Token exchange failed');
+    }
+    return await resp.json();
+  } catch (e) {
+    console.error('Exchange error:', e);
+    throw e;
+  }
 }
 
 /* ---------- INIT ---------- */
 window.addEventListener('load',async()=>{
   document.getElementById('headerLoginBtn').onclick=login;
   document.getElementById('mainLoginBtn').onclick=login;
+  playlistBtn.onclick=createPlaylist;
 
-  const p=new URLSearchParams(location.search),code=p.get('code'),state=p.get('state');
+  const p=new URLSearchParams(location.search),code=p.get('code'),state=p.get('state'),error=p.get('error');
+  
+  if(error) {
+    showErr(`Spotify authorization error: ${error}`);
+    return;
+  }
+  
   if(code){
-    if(state!==sessionStorage.getItem('st'))return showErr('OAuth state mismatch');
-    const data=await exchange(code);
-    if(!data.access_token)return showErr('Token exchange failed');
-    token=data.access_token;sessionStorage.setItem('tok',token);history.replaceState({},'',RED);
-  }else token=sessionStorage.getItem('tok');
+    if(state!==sessionStorage.getItem('st')){
+      showErr('OAuth state mismatch');
+      return;
+    }
+    try {
+      const data=await exchange(code);
+      if(!data.access_token){
+        showErr('Token exchange failed - no access token received');
+        return;
+      }
+      token=data.access_token;
+      sessionStorage.setItem('tok',token);
+      history.replaceState({},'',RED);
+    } catch(e) {
+      showErr('Failed to exchange authorization code');
+      return;
+    }
+  } else {
+    token=sessionStorage.getItem('tok');
+  }
 
   if(token){
     document.getElementById('loginPrompt').style.display='none';
     document.getElementById('loginSection').style.display='none';
     document.getElementById('userInfo').style.display='flex';
-    fetch(`${API}/me`,{headers:{Authorization:`Bearer ${token}`}})
-      .then(r=>r.json())
-      .then(u=>{document.getElementById('userName').textContent=u.display_name||'User';});
-    await loadSeeds();
+    
+    try {
+      const resp = await fetch(`${API}/me`,{headers:{Authorization:`Bearer ${token}`}});
+      if(resp.ok) {
+        const u = await resp.json();
+        userId = u.id;
+        document.getElementById('userName').textContent=u.display_name||'User';
+        await loadSeeds();
+      } else if(resp.status === 401) {
+        // Token expired
+        sessionStorage.removeItem('tok');
+        showErr('Session expired. Please login again.');
+        setTimeout(() => location.reload(), 2000);
+      }
+    } catch(e) {
+      showErr('Failed to load user profile');
+    }
   }
 });
 
@@ -247,30 +329,70 @@ async function loadSeeds(){
   overlay.style.display='flex';
   grid.innerHTML='<div class="loading"><div class="loading-spinner"></div></div>';
   start.disabled=true;
+  
   try{
+    // First, try to get user's top artists to understand their preferences
+    const topResp = await fetch(`${API}/me/top/artists?limit=10`, 
+      {headers:{Authorization:`Bearer ${token}`}});
+    if(topResp.ok) {
+      const topData = await topResp.json();
+      // Analyze user's listening habits
+      topData.items.forEach(artist => {
+        artist.genres.forEach(g => {
+          userPrefs.genres[g] = (userPrefs.genres[g] || 0) + 1;
+        });
+      });
+    }
+    
+    // Get available genre seeds
     const r=await fetch(`${API}/recommendations/available-genre-seeds`,
       {headers:{Authorization:`Bearer ${token}`}});
     if(!r.ok){
-      const e=await r.json();showErr(`Seed error ${r.status}: ${e.error?.message||e}`);
+      const e=await r.json();
+      showErr(`Seed error ${r.status}: ${e.error?.message||'Unknown error'}`);
+      // Use fallback genres
+      seeds = getFallbackGenres();
+    } else {
+      seeds=(await r.json()).genres||getFallbackGenres();
     }
-    seeds=(await r.json()).genres||[];
-  }catch{showErr('Network error while loading genre seeds');seeds=[];}
-  if(!seeds.length){
-    seeds=['pop','rock','hip-hop','edm','dance','house','indie','electronic','jazz','classical',
-           'metal','folk','latin','soul','k-pop','reggae','country','ambient','blues','funk',
-           'techno','trance'];
+  }catch(e){
+    console.error('Error loading seeds:', e);
+    showErr('Network error while loading genre seeds');
+    seeds=getFallbackGenres();
   }
   buildGrid();
 }
+
+function getFallbackGenres() {
+  return ['pop','rock','hip-hop','edm','dance','house','indie','electronic','jazz','classical',
+          'metal','folk','latin','soul','k-pop','reggae','country','ambient','blues','funk',
+          'techno','trance','r-n-b','alternative','punk','disco','synthpop','trap','dubstep',
+          'reggaeton','afrobeat','gospel','world-music','new-age','opera'];
+}
+
 function buildGrid(){
   grid.innerHTML='';
   chosen=[];
-  [...seeds].slice(0,36).sort().forEach(g=>{
-    const div=document.createElement('div');div.className='genre-item';div.textContent=g;
+  
+  // Sort genres by user preference if available
+  const sortedSeeds = [...seeds].sort((a,b) => {
+    const aScore = userPrefs.genres[a] || 0;
+    const bScore = userPrefs.genres[b] || 0;
+    return bScore - aScore;
+  });
+  
+  sortedSeeds.slice(0,36).forEach(g=>{
+    const div=document.createElement('div');
+    div.className='genre-item';
+    div.textContent=g;
     div.onclick=()=>{
       div.classList.toggle('selected');
       chosen=[...document.querySelectorAll('.genre-item.selected')].map(e=>e.textContent);
-      if(chosen.length>5){div.classList.remove('selected');chosen.pop();}
+      if(chosen.length>5){
+        div.classList.remove('selected');
+        chosen.pop();
+        showErr('Maximum 5 genres allowed');
+      }
       start.disabled=chosen.length===0;
     };
     grid.appendChild(div);
@@ -281,120 +403,396 @@ function buildGrid(){
 /* ---------- TRACKS ---------- */
 async function startApp(){
   overlay.style.display='none';
-  actions.style.display='none';
-  deck.innerHTML='<div class="loading"><div class="loading-spinner"></div></div>';
-  queue=[];idx=liked=total=0;updateStats();
-  await fetchMore();renderDeck();
-}
-async function fetchMore(){
-  try{
-    const qs=new URLSearchParams({seed_genres:chosen.slice(0,5).join(','),limit:80,market:'from_token'});
-    const r=await fetch(`${API}/recommendations?${qs}`,{headers:{Authorization:`Bearer ${token}`}});
-    if(!r.ok){
-      const e=await r.json();return showErr(`Rec error ${r.status}: ${e.error?.message||e}`);
-    }
-    const j=await r.json();
-    const more=j.tracks.filter(t=>t.preview_url);
-    console.log(`Fetched ${more.length} playable / ${j.tracks.length} total`);
-    queue.push(...more.sort(()=>Math.random()-.5));
-  }catch{showErr('Network error while loading tracks')}
-  if(!queue.length)queue.push(...demo);
+  actions.style.display='flex';
+  statsEl.style.display='block';
+  deck.innerHTML='<div class="loading"><div class="loading-spinner"></div><p>Finding tracks...</p></div>';
+  deck.classList.add('active');
+  queue=[];idx=liked=total=0;likedTracks=[];updateStats();
+  await fetchMore();
+  if(queue.length > 0) {
+    renderDeck();
+  } else {
+    deck.innerHTML='<div class="loading"><p>No tracks found. Try different genres.</p></div>';
+  }
 }
 
-/* ---------- DEMO ---------- */
-const demo=[{id:'d1',name:'Electric Dreams',artists:[{name:'Neon Pulse'}],
-  album:{images:[{url:'https://picsum.photos/400?random=1'}]},preview:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',pop:72},
-{id:'d2',name:'Midnight City',artists:[{name:'Urban Echo'}],
-  album:{images:[{url:'https://picsum.photos/400?random=2'}]},preview:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',pop:85}];
+async function fetchMore(){
+  try{
+    // Build recommendation parameters with variety
+    const params = {
+      seed_genres: chosen.slice(0,5).join(','),
+      limit: 50,
+      market: 'from_token',
+      min_popularity: 20, // Ensure tracks have some popularity
+      target_energy: 0.5 + (Math.random() * 0.3 - 0.15), // Add variety
+      target_danceability: 0.6 + (Math.random() * 0.3 - 0.15)
+    };
+    
+    // Add seed tracks from liked songs for better personalization
+    if(likedTracks.length > 0) {
+      const seedTracks = likedTracks.slice(-3).map(t => t.id).join(',');
+      params.seed_tracks = seedTracks;
+      params.seed_genres = chosen.slice(0,2).join(','); // Reduce genres to fit API limits
+    }
+    
+    const qs = new URLSearchParams(params);
+    const r=await fetch(`${API}/recommendations?${qs}`,{headers:{Authorization:`Bearer ${token}`}});
+    
+    if(!r.ok){
+      const e=await r.json();
+      console.error('Recommendation error:', e);
+      showErr(`Rec error ${r.status}: ${e.error?.message||'Failed to get recommendations'}`);
+      // Try simpler request
+      const simpleQs = new URLSearchParams({
+        seed_genres: chosen[0],
+        limit: 20,
+        market: 'from_token'
+      });
+      const r2 = await fetch(`${API}/recommendations?${simpleQs}`,{headers:{Authorization:`Bearer ${token}`}});
+      if(r2.ok) {
+        const j2 = await r2.json();
+        const more = j2.tracks.filter(t => t.preview_url);
+        queue.push(...more.sort(() => Math.random() - 0.5));
+      }
+      return;
+    }
+    
+    const j=await r.json();
+    const more=j.tracks.filter(t => t.preview_url && !likedTracks.find(lt => lt.id === t.id));
+    console.log(`Fetched ${more.length} playable / ${j.tracks.length} total`);
+    
+    if(more.length === 0 && queue.length === 0) {
+      // Use demo tracks as last resort
+      queue.push(...getEnhancedDemoTracks());
+    } else {
+      queue.push(...more.sort(() => Math.random() - 0.5));
+    }
+  }catch(e){
+    console.error('Fetch error:', e);
+    showErr('Network error while loading tracks');
+    if(queue.length === 0) queue.push(...getEnhancedDemoTracks());
+  }
+}
+
+/* ---------- ENHANCED DEMO ---------- */
+function getEnhancedDemoTracks() {
+  const genres = chosen.join(', ') || 'various';
+  return [
+    {id:'demo1',name:'Electric Dreams',artists:[{name:'Neon Pulse',id:'demo-artist-1'}],
+     album:{name:'Synthetic Visions',images:[{url:`https://picsum.photos/400/400?random=${Date.now()}`}]},
+     preview_url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+     popularity:72,external_urls:{spotify:'#'},uri:'spotify:track:demo1'},
+    {id:'demo2',name:'Midnight City',artists:[{name:'Urban Echo',id:'demo-artist-2'}],
+     album:{name:'Night Drives',images:[{url:`https://picsum.photos/400/400?random=${Date.now()+1}`}]},
+     preview_url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+     popularity:85,external_urls:{spotify:'#'},uri:'spotify:track:demo2'},
+    {id:'demo3',name:'Crystal Waves',artists:[{name:'Solar Drift',id:'demo-artist-3'}],
+     album:{name:'Ethereal',images:[{url:`https://picsum.photos/400/400?random=${Date.now()+2}`}]},
+     preview_url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+     popularity:68,external_urls:{spotify:'#'},uri:'spotify:track:demo3'}
+  ];
+}
 
 /* ---------- RENDER & INTERACTION ---------- */
 function renderDeck(){
-  deck.classList.add('active');
   deck.innerHTML='';
-  actions.style.display='flex';
-  for(let n=0;n<Math.min(2,queue.length-idx);n++)addCard(queue[idx+n],n);
+  for(let n=0;n<Math.min(3,queue.length-idx);n++)addCard(queue[idx+n],n);
 }
+
 function addCard(t,pos){
-  const c=document.createElement('div');c.className='card';
+  const c=document.createElement('div');
+  c.className='card';
   c.style.zIndex=10-pos;
   c.style.transform=`scale(${1-pos*.05}) translateY(${pos*10}px)`;
+  c.style.opacity = 1 - pos * 0.3;
+  
+  const pop = t.popularity || Math.floor(Math.random() * 50 + 30);
+  const albumImg = t.album?.images?.[0]?.url || `https://picsum.photos/400/400?random=${t.id}`;
+  
   c.innerHTML=`<div class="card-content">
     <div class="album-art">
-      <img src="${t.album.images[0]?.url||''}" onerror="this.style.display='none'"/>
+      <img src="${albumImg}" alt="${t.album?.name || 'Album'}" onerror="this.src='https://picsum.photos/400/400?random=${Date.now()}'"/>
       <div class="audio-player">
         <button class="play-button"><span class="play-icon">▶</span></button>
-        <div class="progress-bar"><div class="progress"></div></div><span class="time">0:00</span>
+        <div class="progress-bar"><div class="progress"></div></div>
+        <span class="time">0:00</span>
       </div>
     </div>
     <div class="song-info">
-      <h2>${t.name}</h2><p class="artist">${t.artists[0].name}</p>
-      <p class="genre">${chosen.join(', ')}</p>
+      <h2>${t.name}</h2>
+      <p class="artist">${t.artists.map(a => a.name).join(', ')}</p>
+      <p class="genre">${chosen.join(', ') || 'Discover'}</p>
       <div class="popularity">
         <span>Popularity</span>
-        <div class="popularity-bar"><div class="popularity-fill" style="width:${t.pop}%"></div></div>
-        <span>${t.pop}%</span>
+        <div class="popularity-bar"><div class="popularity-fill" style="width:${pop}%"></div></div>
+        <span>${pop}%</span>
       </div>
     </div>
-    <div class="love-indicator">LOVE</div><div class="nope-indicator">NOPE</div>
+    <div class="love-indicator">LOVE</div>
+    <div class="nope-indicator">NOPE</div>
   </div>`;
-  if(pos===0){setupSwipe(c,t);setupAudio(c,t);}
+  
+  if(pos===0){
+    setupSwipe(c,t);
+    setupAudio(c,t);
+  }
   deck.appendChild(c);
 }
+
 function setupAudio(card,t){
-  const btn=card.querySelector('.play-button'),icon=btn.querySelector('.play-icon'),
-        bar=card.querySelector('.progress'),tm=card.querySelector('.time');
+  const btn=card.querySelector('.play-button'),
+        icon=btn.querySelector('.play-icon'),
+        bar=card.querySelector('.progress'),
+        tm=card.querySelector('.time');
+  
   btn.onclick=()=>{
-    if(audio&&playing){audio.pause();playing=false;icon.textContent='▶';return;}
+    if(audio&&playing){
+      audio.pause();
+      playing=false;
+      icon.textContent='▶';
+      return;
+    }
+    
     if(audio)audio.pause();
-    audio=new Audio(t.preview);
-    audio.volume=.7;
+    if(prog)clearInterval(prog);
+    
+    audio=new Audio(t.preview_url);
+    audio.volume=0.5;
+    
     audio.play().then(()=>{
-      playing=true;icon.textContent='⏸';
+      playing=true;
+      icon.textContent='⏸';
       prog=setInterval(()=>{
         if(!audio.duration)return;
-        bar.style.width=audio.currentTime/audio.duration*100+'%';
+        const pct = (audio.currentTime/audio.duration)*100;
+        bar.style.width=pct+'%';
         const s=Math.floor(audio.currentTime);
         tm.textContent=`${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
       },100);
-    }).catch(console.log);
-    audio.onended=()=>{playing=false;icon.textContent='▶';clearInterval(prog);};
+    }).catch(e => {
+      console.error('Playback error:', e);
+      showErr('Cannot play preview');
+      icon.textContent='▶';
+    });
+    
+    audio.onended=()=>{
+      playing=false;
+      icon.textContent='▶';
+      clearInterval(prog);
+      bar.style.width='0%';
+      tm.textContent='0:00';
+    };
   };
 }
-function setupSwipe(card){
-  let sx=0,dx=0,drag=false,love=card.querySelector('.love-indicator'),nope=card.querySelector('.nope-indicator');
-  const start=e=>{drag=true;sx=(e.touches?e.touches[0].clientX:e.clientX);card.classList.add('dragging');};
+
+function setupSwipe(card,track){
+  let sx=0,dx=0,dy=0,sy=0,drag=false,
+      love=card.querySelector('.love-indicator'),
+      nope=card.querySelector('.nope-indicator');
+  
+  const start=e=>{
+    drag=true;
+    sx=(e.touches?e.touches[0].clientX:e.clientX);
+    sy=(e.touches?e.touches[0].clientY:e.clientY);
+    card.classList.add('dragging');
+  };
+  
   const move=e=>{
     if(!drag)return;
+    e.preventDefault();
     dx=(e.touches?e.touches[0].clientX:e.clientX)-sx;
-    card.style.transform=`translateX(${dx}px) rotate(${dx/10}deg)`;
-    const o=Math.min(Math.abs(dx)/120,1);
-    love.style.opacity=dx>0?o:0;
-    nope.style.opacity=dx<0?o:0;
+    dy=(e.touches?e.touches[0].clientY:e.clientY)-sy;
+    
+    const rotation = dx/10;
+    const scale = 1 - Math.abs(dx)/1000;
+    card.style.transform=`translateX(${dx}px) translateY(${dy/2}px) rotate(${rotation}deg) scale(${scale})`;
+    
+    const opacity = Math.min(Math.abs(dx)/100, 1);
+    love.style.opacity=dx>0?opacity:0;
+    nope.style.opacity=dx<0?opacity:0;
   };
+  
   const end=()=>{
-    if(!drag)return;drag=false;card.classList.remove('dragging');
-    if(Math.abs(dx)>110){swipe(dx>0);}else{
-      card.style.transform='';love.style.opacity=0;nope.style.opacity=0;
+    if(!drag)return;
+    drag=false;
+    card.classList.remove('dragging');
+    
+    if(Math.abs(dx)>100){
+      swipe(dx>0,track);
+    }else{
+      card.style.transform='';
+      love.style.opacity=0;
+      nope.style.opacity=0;
     }
   };
+  
   ['mousedown','touchstart'].forEach(ev=>card.addEventListener(ev,start));
-  ['mousemove','touchmove'].forEach(ev=>card.addEventListener(ev,move));
-  ['mouseup','mouseleave','touchend'].forEach(ev=>card.addEventListener(ev,end));
-  document.getElementById('like').onclick=()=>swipe(true);
-  document.getElementById('dislike').onclick=()=>swipe(false);
-  function swipe(like){
-    card.classList.add(like?'swiped-right':'swiped-left');
-    total++;if(like)liked++;updateStats();
-    idx++;
-    if(queue.length-idx<15)fetchMore();
-    setTimeout(()=>{
-      const next=queue[idx];
-      if(next)addCard(next,0);
-      card.remove();
-    },220);
+  ['mousemove','touchmove'].forEach(ev=>document.addEventListener(ev,move,{passive:false}));
+  ['mouseup','mouseleave','touchend'].forEach(ev=>document.addEventListener(ev,end));
+}
+
+/* ---------- SWIPE ACTIONS ---------- */
+function swipe(isLike,track){
+  const card = deck.querySelector('.card');
+  if(!card) return;
+  
+  // Stop audio if playing
+  if(audio){
+    audio.pause();
+    playing=false;
+    if(prog)clearInterval(prog);
+  }
+  
+  card.classList.add(isLike?'swiped-right':'swiped-left');
+  total++;
+  
+  if(isLike){
+    liked++;
+    likedTracks.push(track);
+    // Learn from liked tracks
+    updatePreferences(track);
+  }
+  
+  updateStats();
+  idx++;
+  
+  // Preload more tracks if running low
+  if(queue.length-idx<10)fetchMore();
+  
+  setTimeout(()=>{
+    card.remove();
+    if(idx<queue.length){
+      renderDeck();
+    }else{
+      deck.innerHTML='<div class="loading"><p>No more tracks! Loading more...</p></div>';
+      fetchMore().then(()=>{
+        if(queue.length>idx)renderDeck();
+        else deck.innerHTML='<div class="loading"><p>No more tracks available. Try different genres!</p></div>';
+      });
+    }
+  },300);
+}
+
+/* ---------- PREFERENCES LEARNING ---------- */
+function updatePreferences(track){
+  // Update genre preferences
+  if(track.genres){
+    track.genres.forEach(g => {
+      userPrefs.genres[g] = (userPrefs.genres[g] || 0) + 1;
+    });
+  }
+  
+  // Update artist preferences
+  track.artists.forEach(a => {
+    userPrefs.artists[a.id] = (userPrefs.artists[a.id] || 0) + 1;
+  });
+  
+  // Show playlist button after 5 likes
+  if(liked >= 5){
+    playlistBtn.style.display = 'block';
   }
 }
-function updateStats(){likedEl.textContent=liked;totalEl.textContent=total;}
+
+/* ---------- STATS & PLAYLIST ---------- */
+function updateStats(){
+  likedEl.textContent=liked;
+  totalEl.textContent=total;
+}
+
+async function createPlaylist(){
+  if(likedTracks.length === 0){
+    showErr('No tracks liked yet!');
+    return;
+  }
+  
+  playlistBtn.disabled = true;
+  playlistBtn.textContent = 'Creating...';
+  
+  try{
+    // Create playlist
+    const playlistData = {
+      name: `Jungl Discovery ${new Date().toLocaleDateString()}`,
+      description: `${liked} tracks discovered on Jungl from genres: ${chosen.join(', ')}`,
+      public: false
+    };
+    
+    const createResp = await fetch(`${API}/users/${userId}/playlists`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(playlistData)
+    });
+    
+    if(!createResp.ok){
+      throw new Error('Failed to create playlist');
+    }
+    
+    const playlist = await createResp.json();
+    
+    // Add tracks (Spotify limits to 100 per request)
+    const uris = likedTracks.filter(t => t.uri).map(t => t.uri);
+    
+    for(let i = 0; i < uris.length; i += 100){
+      const batch = uris.slice(i, i + 100);
+      const addResp = await fetch(`${API}/playlists/${playlist.id}/tracks`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({uris: batch})
+      });
+      
+      if(!addResp.ok){
+        console.error('Failed to add tracks batch');
+      }
+    }
+    
+    playlistBtn.textContent = '✓ Playlist Created!';
+    showErr(`Playlist "${playlist.name}" created with ${likedTracks.length} tracks!`);
+    
+    setTimeout(() => {
+      playlistBtn.textContent = 'Create Another Playlist';
+      playlistBtn.disabled = false;
+    }, 3000);
+    
+  }catch(e){
+    console.error('Playlist error:', e);
+    showErr('Failed to create playlist. Please try again.');
+    playlistBtn.textContent = 'Create Playlist';
+    playlistBtn.disabled = false;
+  }
+}
+
+/* ---------- BUTTON ACTIONS ---------- */
+document.getElementById('like').onclick=()=>{
+  const card = deck.querySelector('.card');
+  if(card && idx < queue.length){
+    swipe(true, queue[idx]);
+  }
+};
+
+document.getElementById('dislike').onclick=()=>{
+  const card = deck.querySelector('.card');
+  if(card && idx < queue.length){
+    swipe(false, queue[idx]);
+  }
+};
+
+/* ---------- KEYBOARD SHORTCUTS ---------- */
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft'){
+    document.getElementById('dislike').click();
+  }else if(e.key === 'ArrowRight'){
+    document.getElementById('like').click();
+  }else if(e.key === ' '){
+    e.preventDefault();
+    const playBtn = deck.querySelector('.card .play-button');
+    if(playBtn) playBtn.click();
+  }
+});
 </script>
 </body>
 </html>
