@@ -422,6 +422,7 @@ async function startApp(){
   overlay.style.display='none';
   actions.style.display='flex';
   statsEl.style.display='block';
+  backBtn.style.display='block'; // Always show back button
   deck.innerHTML='<div class="loading"><div class="loading-spinner"></div><p>Finding tracks from Spotify...</p></div>';
   deck.classList.add('active');
   queue=[];idx=liked=total=0;likedTracks=[];updateStats();
@@ -429,67 +430,85 @@ async function startApp(){
   if(queue.length > 0) {
     renderDeck();
   } else {
-    deck.innerHTML='<div class="loading"><p>No tracks found. Try different genres.</p></div>';
-    backBtn.style.display='block';
+    deck.innerHTML='<div class="loading"><p>No tracks found. Click "Change Genres" below to try different ones.</p></div>';
   }
 }
 
 async function fetchMore(){
   try{
-    // Build smart recommendation parameters
-    const params = {
-      seed_genres: chosen.slice(0,5).join(','),
-      limit: 100, // Get max tracks
-      market: 'from_token',
-      min_popularity: 15, // Lower minimum to get more variety
-      max_popularity: 100
-    };
+    // Since recommendations might be restricted, let's use search instead
+    // Build search queries based on genres
+    const searchQueries = chosen.map(genre => `genre:"${genre}"`);
+    const allTracks = [];
     
-    // Add variety with audio features
-    if(Math.random() > 0.5) {
-      params.target_energy = Math.random();
-      params.target_danceability = Math.random();
-      params.target_valence = Math.random();
+    // Search for tracks by genre
+    for(let i = 0; i < Math.min(searchQueries.length, 3); i++) {
+      const searchParams = {
+        q: searchQueries[i],
+        type: 'track',
+        limit: 50,
+        market: 'from_token',
+        offset: Math.floor(Math.random() * 100) // Random offset for variety
+      };
+      
+      const searchQs = new URLSearchParams(searchParams);
+      const searchResp = await fetch(`${API}/search?${searchQs}`, {
+        headers: {Authorization: `Bearer ${token}`}
+      });
+      
+      if(searchResp.ok) {
+        const searchData = await searchResp.json();
+        if(searchData.tracks && searchData.tracks.items) {
+          allTracks.push(...searchData.tracks.items);
+        }
+      }
     }
     
-    // Use liked tracks as seeds if available
-    if(likedTracks.length > 0 && likedTracks.length < 5) {
-      const seedTracks = likedTracks.slice(-2).map(t => t.id).join(',');
-      params.seed_tracks = seedTracks;
-      params.seed_genres = chosen.slice(0,3).join(',');
-    }
-    
-    const qs = new URLSearchParams(params);
-    const r = await fetch(`${API}/recommendations?${qs}`,{headers:{Authorization:`Bearer ${token}`}});
-    
-    if(!r.ok){
-      const e = await r.json();
-      console.error('Recommendation error:', e);
-      showErr(`Failed to get recommendations: ${e.error?.message||'Unknown error'}`);
-      backBtn.style.display='block';
-      return;
-    }
-    
-    const j = await r.json();
-    // ONLY USE TRACKS WITH PREVIEW URLs - NO DEMOS!
-    const newTracks = j.tracks.filter(t => {
+    // Filter for tracks with preview URLs
+    const tracksWithPreviews = allTracks.filter(t => {
       return t.preview_url && 
              !likedTracks.find(lt => lt.id === t.id) &&
              !queue.find(q => q.id === t.id);
     });
     
-    console.log(`Got ${newTracks.length} new playable tracks from Spotify`);
+    console.log(`Found ${tracksWithPreviews.length} tracks with previews from ${allTracks.length} total`);
     
-    if(newTracks.length > 0) {
-      queue.push(...newTracks.sort(() => Math.random() - 0.5));
-    } else if(queue.length === 0) {
-      showErr('No tracks with previews found. Try different genres.');
-      backBtn.style.display='block';
+    // If we have tracks, add them to queue
+    if(tracksWithPreviews.length > 0) {
+      queue.push(...tracksWithPreviews.sort(() => Math.random() - 0.5));
+    } else {
+      // Try alternative approach - search for popular tracks
+      const popParams = {
+        q: 'year:2023-2025', // Recent tracks more likely to have previews
+        type: 'track',
+        limit: 50,
+        market: 'from_token'
+      };
+      
+      const popQs = new URLSearchParams(popParams);
+      const popResp = await fetch(`${API}/search?${popQs}`, {
+        headers: {Authorization: `Bearer ${token}`}
+      });
+      
+      if(popResp.ok) {
+        const popData = await popResp.json();
+        if(popData.tracks && popData.tracks.items) {
+          const popTracks = popData.tracks.items.filter(t => t.preview_url);
+          if(popTracks.length > 0) {
+            queue.push(...popTracks.sort(() => Math.random() - 0.5));
+            showErr('Using popular tracks - genre search had limited results');
+          }
+        }
+      }
     }
+    
+    if(queue.length === 0) {
+      showErr('No tracks with previews found. This might be due to Spotify API restrictions. Try different genres or check back later.');
+    }
+    
   }catch(e){
     console.error('Fetch error:', e);
-    showErr('Network error while loading tracks');
-    backBtn.style.display='block';
+    showErr('Error loading tracks. This might be due to Spotify API restrictions.');
   }
 }
 
