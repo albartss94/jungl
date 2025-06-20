@@ -123,6 +123,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
                  transition:.3s;margin:15px auto 0}
 .playlist-button:hover{background:#1ed760;transform:translateY(-1px)}
 
+/* back button */
+.back-button{margin-top:15px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+             color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:600;
+             cursor:pointer;transition:.3s}
+.back-button:hover{background:rgba(255,255,255,.15);transform:translateY(-1px)}
+
 /* loading spinner */
 .loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
 .loading-spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.1);border-top-color:#1DB954;
@@ -211,6 +217,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
   <div class="stats" id="stats" style="display:none">
     <span id="liked">0</span> liked • <span id="total">0</span> heard
     <button class="playlist-button" id="createPlaylist">Create Playlist</button>
+    <button class="back-button" id="backToGenres" style="display:none">Change Genres</button>
   </div>
 </div>
 
@@ -231,14 +238,15 @@ const showErr=m=>{const b=document.getElementById('err');b.textContent=m;b.style
 
 /* ---------- STATE ---------- */
 let token=null,seeds=[],chosen=[],queue=[],idx=0,liked=0,total=0,audio=null,playing=false,prog=null;
-let likedTracks=[], userId=null, userPrefs={genres:{},artists:{},features:{}};
+let likedTracks=[], userId=null, userPrefs={genres:{},artists:{},features:{}}, autoplayEnabled=false;
 
 /* ---------- DOM refs ---------- */
 const overlay=document.getElementById('overlay'),grid=document.getElementById('genreGrid'),
       start=document.getElementById('startBtn'),deck=document.getElementById('deck'),
       actions=document.getElementById('actions'),likedEl=document.getElementById('liked'),
       totalEl=document.getElementById('total'),statsEl=document.getElementById('stats'),
-      playlistBtn=document.getElementById('createPlaylist');
+      playlistBtn=document.getElementById('createPlaylist'),
+      backBtn=document.getElementById('backToGenres');
 
 /* ---------- LOGIN ---------- */
 async function login(){
@@ -270,6 +278,7 @@ window.addEventListener('load',async()=>{
   document.getElementById('headerLoginBtn').onclick=login;
   document.getElementById('mainLoginBtn').onclick=login;
   playlistBtn.onclick=createPlaylist;
+  backBtn.onclick=backToGenres;
 
   const p=new URLSearchParams(location.search),code=p.get('code'),state=p.get('state'),error=p.get('error');
   
@@ -313,7 +322,6 @@ window.addEventListener('load',async()=>{
         document.getElementById('userName').textContent=u.display_name||'User';
         await loadSeeds();
       } else if(resp.status === 401) {
-        // Token expired
         sessionStorage.removeItem('tok');
         showErr('Session expired. Please login again.');
         setTimeout(() => location.reload(), 2000);
@@ -324,6 +332,18 @@ window.addEventListener('load',async()=>{
   }
 });
 
+/* ---------- BACK TO GENRES ---------- */
+function backToGenres(){
+  deck.classList.remove('active');
+  actions.style.display='none';
+  statsEl.style.display='none';
+  overlay.style.display='flex';
+  if(audio){
+    audio.pause();
+    playing=false;
+  }
+}
+
 /* ---------- GENRE SEEDS ---------- */
 async function loadSeeds(){
   overlay.style.display='flex';
@@ -331,12 +351,11 @@ async function loadSeeds(){
   start.disabled=true;
   
   try{
-    // First, try to get user's top artists to understand their preferences
+    // Get user's top artists for preferences
     const topResp = await fetch(`${API}/me/top/artists?limit=10`, 
       {headers:{Authorization:`Bearer ${token}`}});
     if(topResp.ok) {
       const topData = await topResp.json();
-      // Analyze user's listening habits
       topData.items.forEach(artist => {
         artist.genres.forEach(g => {
           userPrefs.genres[g] = (userPrefs.genres[g] || 0) + 1;
@@ -350,7 +369,6 @@ async function loadSeeds(){
     if(!r.ok){
       const e=await r.json();
       showErr(`Seed error ${r.status}: ${e.error?.message||'Unknown error'}`);
-      // Use fallback genres
       seeds = getFallbackGenres();
     } else {
       seeds=(await r.json()).genres||getFallbackGenres();
@@ -374,7 +392,6 @@ function buildGrid(){
   grid.innerHTML='';
   chosen=[];
   
-  // Sort genres by user preference if available
   const sortedSeeds = [...seeds].sort((a,b) => {
     const aScore = userPrefs.genres[a] || 0;
     const bScore = userPrefs.genres[b] || 0;
@@ -405,7 +422,7 @@ async function startApp(){
   overlay.style.display='none';
   actions.style.display='flex';
   statsEl.style.display='block';
-  deck.innerHTML='<div class="loading"><div class="loading-spinner"></div><p>Finding tracks...</p></div>';
+  deck.innerHTML='<div class="loading"><div class="loading-spinner"></div><p>Finding tracks from Spotify...</p></div>';
   deck.classList.add('active');
   queue=[];idx=liked=total=0;likedTracks=[];updateStats();
   await fetchMore();
@@ -413,84 +430,67 @@ async function startApp(){
     renderDeck();
   } else {
     deck.innerHTML='<div class="loading"><p>No tracks found. Try different genres.</p></div>';
+    backBtn.style.display='block';
   }
 }
 
 async function fetchMore(){
   try{
-    // Build recommendation parameters with variety
+    // Build smart recommendation parameters
     const params = {
       seed_genres: chosen.slice(0,5).join(','),
-      limit: 50,
+      limit: 100, // Get max tracks
       market: 'from_token',
-      min_popularity: 20, // Ensure tracks have some popularity
-      target_energy: 0.5 + (Math.random() * 0.3 - 0.15), // Add variety
-      target_danceability: 0.6 + (Math.random() * 0.3 - 0.15)
+      min_popularity: 15, // Lower minimum to get more variety
+      max_popularity: 100
     };
     
-    // Add seed tracks from liked songs for better personalization
-    if(likedTracks.length > 0) {
-      const seedTracks = likedTracks.slice(-3).map(t => t.id).join(',');
+    // Add variety with audio features
+    if(Math.random() > 0.5) {
+      params.target_energy = Math.random();
+      params.target_danceability = Math.random();
+      params.target_valence = Math.random();
+    }
+    
+    // Use liked tracks as seeds if available
+    if(likedTracks.length > 0 && likedTracks.length < 5) {
+      const seedTracks = likedTracks.slice(-2).map(t => t.id).join(',');
       params.seed_tracks = seedTracks;
-      params.seed_genres = chosen.slice(0,2).join(','); // Reduce genres to fit API limits
+      params.seed_genres = chosen.slice(0,3).join(',');
     }
     
     const qs = new URLSearchParams(params);
-    const r=await fetch(`${API}/recommendations?${qs}`,{headers:{Authorization:`Bearer ${token}`}});
+    const r = await fetch(`${API}/recommendations?${qs}`,{headers:{Authorization:`Bearer ${token}`}});
     
     if(!r.ok){
-      const e=await r.json();
+      const e = await r.json();
       console.error('Recommendation error:', e);
-      showErr(`Rec error ${r.status}: ${e.error?.message||'Failed to get recommendations'}`);
-      // Try simpler request
-      const simpleQs = new URLSearchParams({
-        seed_genres: chosen[0],
-        limit: 20,
-        market: 'from_token'
-      });
-      const r2 = await fetch(`${API}/recommendations?${simpleQs}`,{headers:{Authorization:`Bearer ${token}`}});
-      if(r2.ok) {
-        const j2 = await r2.json();
-        const more = j2.tracks.filter(t => t.preview_url);
-        queue.push(...more.sort(() => Math.random() - 0.5));
-      }
+      showErr(`Failed to get recommendations: ${e.error?.message||'Unknown error'}`);
+      backBtn.style.display='block';
       return;
     }
     
-    const j=await r.json();
-    const more=j.tracks.filter(t => t.preview_url && !likedTracks.find(lt => lt.id === t.id));
-    console.log(`Fetched ${more.length} playable / ${j.tracks.length} total`);
+    const j = await r.json();
+    // ONLY USE TRACKS WITH PREVIEW URLs - NO DEMOS!
+    const newTracks = j.tracks.filter(t => {
+      return t.preview_url && 
+             !likedTracks.find(lt => lt.id === t.id) &&
+             !queue.find(q => q.id === t.id);
+    });
     
-    if(more.length === 0 && queue.length === 0) {
-      // Use demo tracks as last resort
-      queue.push(...getEnhancedDemoTracks());
-    } else {
-      queue.push(...more.sort(() => Math.random() - 0.5));
+    console.log(`Got ${newTracks.length} new playable tracks from Spotify`);
+    
+    if(newTracks.length > 0) {
+      queue.push(...newTracks.sort(() => Math.random() - 0.5));
+    } else if(queue.length === 0) {
+      showErr('No tracks with previews found. Try different genres.');
+      backBtn.style.display='block';
     }
   }catch(e){
     console.error('Fetch error:', e);
     showErr('Network error while loading tracks');
-    if(queue.length === 0) queue.push(...getEnhancedDemoTracks());
+    backBtn.style.display='block';
   }
-}
-
-/* ---------- ENHANCED DEMO ---------- */
-function getEnhancedDemoTracks() {
-  const genres = chosen.join(', ') || 'various';
-  return [
-    {id:'demo1',name:'Electric Dreams',artists:[{name:'Neon Pulse',id:'demo-artist-1'}],
-     album:{name:'Synthetic Visions',images:[{url:`https://picsum.photos/400/400?random=${Date.now()}`}]},
-     preview_url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-     popularity:72,external_urls:{spotify:'#'},uri:'spotify:track:demo1'},
-    {id:'demo2',name:'Midnight City',artists:[{name:'Urban Echo',id:'demo-artist-2'}],
-     album:{name:'Night Drives',images:[{url:`https://picsum.photos/400/400?random=${Date.now()+1}`}]},
-     preview_url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
-     popularity:85,external_urls:{spotify:'#'},uri:'spotify:track:demo2'},
-    {id:'demo3',name:'Crystal Waves',artists:[{name:'Solar Drift',id:'demo-artist-3'}],
-     album:{name:'Ethereal',images:[{url:`https://picsum.photos/400/400?random=${Date.now()+2}`}]},
-     preview_url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
-     popularity:68,external_urls:{spotify:'#'},uri:'spotify:track:demo3'}
-  ];
 }
 
 /* ---------- RENDER & INTERACTION ---------- */
@@ -506,12 +506,11 @@ function addCard(t,pos){
   c.style.transform=`scale(${1-pos*.05}) translateY(${pos*10}px)`;
   c.style.opacity = 1 - pos * 0.3;
   
-  const pop = t.popularity || Math.floor(Math.random() * 50 + 30);
-  const albumImg = t.album?.images?.[0]?.url || `https://picsum.photos/400/400?random=${t.id}`;
+  const albumImg = t.album?.images?.[0]?.url || '';
   
   c.innerHTML=`<div class="card-content">
     <div class="album-art">
-      <img src="${albumImg}" alt="${t.album?.name || 'Album'}" onerror="this.src='https://picsum.photos/400/400?random=${Date.now()}'"/>
+      <img src="${albumImg}" alt="${t.name} - ${t.album?.name || 'Album'}"/>
       <div class="audio-player">
         <button class="play-button"><span class="play-icon">▶</span></button>
         <div class="progress-bar"><div class="progress"></div></div>
@@ -524,8 +523,8 @@ function addCard(t,pos){
       <p class="genre">${chosen.join(', ') || 'Discover'}</p>
       <div class="popularity">
         <span>Popularity</span>
-        <div class="popularity-bar"><div class="popularity-fill" style="width:${pop}%"></div></div>
-        <span>${pop}%</span>
+        <div class="popularity-bar"><div class="popularity-fill" style="width:${t.popularity}%"></div></div>
+        <span>${t.popularity}%</span>
       </div>
     </div>
     <div class="love-indicator">LOVE</div>
@@ -544,6 +543,11 @@ function setupAudio(card,t){
         icon=btn.querySelector('.play-icon'),
         bar=card.querySelector('.progress'),
         tm=card.querySelector('.time');
+  
+  // Auto-play first card if enabled
+  if(autoplayEnabled && card === deck.querySelector('.card')){
+    setTimeout(() => btn.click(), 500);
+  }
   
   btn.onclick=()=>{
     if(audio&&playing){
@@ -571,7 +575,7 @@ function setupAudio(card,t){
       },100);
     }).catch(e => {
       console.error('Playback error:', e);
-      showErr('Cannot play preview');
+      showErr('Cannot play preview. Track might be region-locked.');
       icon.textContent='▶';
     });
     
@@ -649,7 +653,6 @@ function swipe(isLike,track){
   if(isLike){
     liked++;
     likedTracks.push(track);
-    // Learn from liked tracks
     updatePreferences(track);
   }
   
@@ -664,10 +667,14 @@ function swipe(isLike,track){
     if(idx<queue.length){
       renderDeck();
     }else{
-      deck.innerHTML='<div class="loading"><p>No more tracks! Loading more...</p></div>';
+      deck.innerHTML='<div class="loading"><div class="loading-spinner"></div><p>Loading more tracks...</p></div>';
       fetchMore().then(()=>{
-        if(queue.length>idx)renderDeck();
-        else deck.innerHTML='<div class="loading"><p>No more tracks available. Try different genres!</p></div>';
+        if(queue.length>idx){
+          renderDeck();
+        }else{
+          deck.innerHTML='<div class="loading"><p>No more tracks available.</p></div>';
+          backBtn.style.display='block';
+        }
       });
     }
   },300);
@@ -675,13 +682,6 @@ function swipe(isLike,track){
 
 /* ---------- PREFERENCES LEARNING ---------- */
 function updatePreferences(track){
-  // Update genre preferences
-  if(track.genres){
-    track.genres.forEach(g => {
-      userPrefs.genres[g] = (userPrefs.genres[g] || 0) + 1;
-    });
-  }
-  
   // Update artist preferences
   track.artists.forEach(a => {
     userPrefs.artists[a.id] = (userPrefs.artists[a.id] || 0) + 1;
@@ -697,6 +697,11 @@ function updatePreferences(track){
 function updateStats(){
   likedEl.textContent=liked;
   totalEl.textContent=total;
+  
+  // Show back button if no tracks
+  if(total > 0 && queue.length - idx === 0){
+    backBtn.style.display='block';
+  }
 }
 
 async function createPlaylist(){
@@ -726,13 +731,14 @@ async function createPlaylist(){
     });
     
     if(!createResp.ok){
-      throw new Error('Failed to create playlist');
+      const err = await createResp.json();
+      throw new Error(err.error?.message || 'Failed to create playlist');
     }
     
     const playlist = await createResp.json();
     
     // Add tracks (Spotify limits to 100 per request)
-    const uris = likedTracks.filter(t => t.uri).map(t => t.uri);
+    const uris = likedTracks.map(t => t.uri);
     
     for(let i = 0; i < uris.length; i += 100){
       const batch = uris.slice(i, i + 100);
@@ -751,7 +757,14 @@ async function createPlaylist(){
     }
     
     playlistBtn.textContent = '✓ Playlist Created!';
-    showErr(`Playlist "${playlist.name}" created with ${likedTracks.length} tracks!`);
+    showErr(`Success! Created "${playlist.name}" with ${likedTracks.length} tracks!`);
+    
+    // Open playlist in Spotify
+    if(playlist.external_urls?.spotify){
+      setTimeout(() => {
+        window.open(playlist.external_urls.spotify, '_blank');
+      }, 1500);
+    }
     
     setTimeout(() => {
       playlistBtn.textContent = 'Create Another Playlist';
@@ -760,7 +773,7 @@ async function createPlaylist(){
     
   }catch(e){
     console.error('Playlist error:', e);
-    showErr('Failed to create playlist. Please try again.');
+    showErr(`Failed to create playlist: ${e.message}`);
     playlistBtn.textContent = 'Create Playlist';
     playlistBtn.disabled = false;
   }
@@ -791,6 +804,9 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
     const playBtn = deck.querySelector('.card .play-button');
     if(playBtn) playBtn.click();
+  }else if(e.key === 'a' || e.key === 'A'){
+    autoplayEnabled = !autoplayEnabled;
+    showErr(`Autoplay ${autoplayEnabled ? 'enabled' : 'disabled'}`);
   }
 });
 </script>
