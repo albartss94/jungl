@@ -351,33 +351,35 @@ async function loadSeeds(){
   start.disabled=true;
   
   try{
-    // Get user's top artists for preferences
-    const topResp = await fetch(`${API}/me/top/artists?limit=10`, 
-      {headers:{Authorization:`Bearer ${token}`}});
-    if(topResp.ok) {
-      const topData = await topResp.json();
-      topData.items.forEach(artist => {
-        artist.genres.forEach(g => {
-          userPrefs.genres[g] = (userPrefs.genres[g] || 0) + 1;
-        });
-      });
+    // Try to get user's top artists for preferences (might fail for dev apps)
+    try {
+      const topResp = await fetch(`${API}/me/top/artists?limit=10`, 
+        {headers:{Authorization:`Bearer ${token}`}});
+      if(topResp.ok) {
+        const topData = await topResp.json();
+        if(topData.items) {
+          topData.items.forEach(artist => {
+            if(artist.genres) {
+              artist.genres.forEach(g => {
+                userPrefs.genres[g] = (userPrefs.genres[g] || 0) + 1;
+              });
+            }
+          });
+        }
+      }
+    } catch(e) {
+      console.log('Could not load top artists - using default genres');
     }
     
-    // Get available genre seeds
-    const r=await fetch(`${API}/recommendations/available-genre-seeds`,
-      {headers:{Authorization:`Bearer ${token}`}});
-    if(!r.ok){
-      const e=await r.json();
-      showErr(`Seed error ${r.status}: ${e.error?.message||'Unknown error'}`);
-      seeds = getFallbackGenres();
-    } else {
-      seeds=(await r.json()).genres||getFallbackGenres();
-    }
+    // Since genre seeds endpoint might be restricted, just use our fallback list
+    seeds = getFallbackGenres();
+    console.log('Using fallback genre list');
+    
   }catch(e){
-    console.error('Error loading seeds:', e);
-    showErr('Network error while loading genre seeds');
+    console.error('Error in loadSeeds:', e);
     seeds=getFallbackGenres();
   }
+  
   buildGrid();
 }
 
@@ -436,22 +438,22 @@ async function startApp(){
 
 async function fetchMore(){
   try{
-    // Since recommendations might be restricted, let's use search instead
-    // Build search queries based on genres
-    const searchQueries = chosen.map(genre => `genre:"${genre}"`);
+    // Use search API with better query construction
     const allTracks = [];
     
-    // Search for tracks by genre
-    for(let i = 0; i < Math.min(searchQueries.length, 3); i++) {
+    // Try multiple search strategies
+    for(const genre of chosen) {
+      // Search by genre keyword (more flexible than genre: filter)
       const searchParams = {
-        q: searchQueries[i],
+        q: genre, // Just the genre name, not genre:"name"
         type: 'track',
         limit: 50,
-        market: 'from_token',
-        offset: Math.floor(Math.random() * 100) // Random offset for variety
+        market: 'US' // Use specific market for better results
       };
       
       const searchQs = new URLSearchParams(searchParams);
+      console.log(`Searching for: ${genre}`);
+      
       const searchResp = await fetch(`${API}/search?${searchQs}`, {
         headers: {Authorization: `Bearer ${token}`}
       });
@@ -459,56 +461,88 @@ async function fetchMore(){
       if(searchResp.ok) {
         const searchData = await searchResp.json();
         if(searchData.tracks && searchData.tracks.items) {
-          allTracks.push(...searchData.tracks.items);
+          const tracks = searchData.tracks.items;
+          console.log(`Found ${tracks.length} tracks for ${genre}`);
+          allTracks.push(...tracks);
+        }
+      } else {
+        console.error(`Search failed for ${genre}:`, await searchResp.text());
+      }
+    }
+    
+    // Also try searching for popular recent tracks
+    if(allTracks.length < 20) {
+      const yearSearches = ['2024', '2023', '2022'];
+      for(const year of yearSearches) {
+        const popParams = {
+          q: `year:${year}`,
+          type: 'track',
+          limit: 50,
+          market: 'US'
+        };
+        
+        const popQs = new URLSearchParams(popParams);
+        const popResp = await fetch(`${API}/search?${popQs}`, {
+          headers: {Authorization: `Bearer ${token}`}
+        });
+        
+        if(popResp.ok) {
+          const popData = await popResp.json();
+          if(popData.tracks && popData.tracks.items) {
+            allTracks.push(...popData.tracks.items);
+          }
         }
       }
     }
     
-    // Filter for tracks with preview URLs
-    const tracksWithPreviews = allTracks.filter(t => {
-      return t.preview_url && 
+    // Remove duplicates and filter for tracks with previews
+    const uniqueTracks = Array.from(new Map(allTracks.map(t => [t.id, t])).values());
+    const tracksWithPreviews = uniqueTracks.filter(t => {
+      return t && t.preview_url && 
              !likedTracks.find(lt => lt.id === t.id) &&
              !queue.find(q => q.id === t.id);
     });
     
-    console.log(`Found ${tracksWithPreviews.length} tracks with previews from ${allTracks.length} total`);
+    console.log(`Total unique tracks: ${uniqueTracks.length}, with previews: ${tracksWithPreviews.length}`);
     
-    // If we have tracks, add them to queue
     if(tracksWithPreviews.length > 0) {
+      // Shuffle and add to queue
       queue.push(...tracksWithPreviews.sort(() => Math.random() - 0.5));
+      console.log(`Queue now has ${queue.length} tracks`);
     } else {
-      // Try alternative approach - search for popular tracks
-      const popParams = {
-        q: 'year:2023-2025', // Recent tracks more likely to have previews
+      // Last resort - search for very popular tracks
+      const lastResortParams = {
+        q: 'a', // Single letter searches return many results
         type: 'track',
         limit: 50,
-        market: 'from_token'
+        market: 'US'
       };
       
-      const popQs = new URLSearchParams(popParams);
-      const popResp = await fetch(`${API}/search?${popQs}`, {
+      const lastQs = new URLSearchParams(lastResortParams);
+      const lastResp = await fetch(`${API}/search?${lastQs}`, {
         headers: {Authorization: `Bearer ${token}`}
       });
       
-      if(popResp.ok) {
-        const popData = await popResp.json();
-        if(popData.tracks && popData.tracks.items) {
-          const popTracks = popData.tracks.items.filter(t => t.preview_url);
-          if(popTracks.length > 0) {
-            queue.push(...popTracks.sort(() => Math.random() - 0.5));
-            showErr('Using popular tracks - genre search had limited results');
+      if(lastResp.ok) {
+        const lastData = await lastResp.json();
+        if(lastData.tracks && lastData.tracks.items) {
+          const lastTracks = lastData.tracks.items.filter(t => t.preview_url);
+          if(lastTracks.length > 0) {
+            queue.push(...lastTracks.sort(() => Math.random() - 0.5));
+            showErr('Limited genre results - showing popular tracks instead');
           }
         }
       }
     }
     
     if(queue.length === 0) {
-      showErr('No tracks with previews found. This might be due to Spotify API restrictions. Try different genres or check back later.');
+      console.error('No tracks found at all');
+      showErr('Unable to find tracks. This may be due to Spotify API restrictions or region limitations.');
     }
     
   }catch(e){
     console.error('Fetch error:', e);
-    showErr('Error loading tracks. This might be due to Spotify API restrictions.');
+    showErr(`Error loading tracks: ${e.message}`);
   }
 }
 
